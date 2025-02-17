@@ -10,18 +10,10 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
 import { BaseModel } from "./BaseModel.js";
 import { User } from "./User.js";
-export var OtpType;
-(function (OtpType) {
-    OtpType["UserVerification"] = "user_verification";
-    OtpType["TransactionValidation"] = "transaction_validation";
-    OtpType["AccountDeletion"] = "account_deletion";
-})(OtpType || (OtpType = {}));
 let Otp = class Otp extends BaseModel {
     user;
     otp_code;
-    expires_at;
     is_used;
-    otp_type;
 };
 __decorate([
     ManyToOne(() => User, (user) => user.email, { onDelete: "CASCADE" }) // Foreign key relationship
@@ -35,17 +27,9 @@ __decorate([
     __metadata("design:type", String)
 ], Otp.prototype, "otp_code", void 0);
 __decorate([
-    Column({ type: "timestamp", nullable: false }),
-    __metadata("design:type", Date)
-], Otp.prototype, "expires_at", void 0);
-__decorate([
     Column({ default: false }),
     __metadata("design:type", Boolean)
 ], Otp.prototype, "is_used", void 0);
-__decorate([
-    Column({ type: "enum", enum: OtpType, nullable: false }),
-    __metadata("design:type", String)
-], Otp.prototype, "otp_type", void 0);
 Otp = __decorate([
     Entity()
 ], Otp);

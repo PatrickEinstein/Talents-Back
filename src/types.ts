@@ -7,13 +7,16 @@ export interface ILogin {
   password: string;
 }
 export interface ICreateUser {
-  first_name: string;
-  last_name: string;
-  dob: Date;
+  firstName: string;
+  lastName: string;
   email: string;
-  password: string;
+  phone: string;
+  dOB: Date;
+  nationality: string;
+  state: string;
+  city: string;
   username: string;
-  user_type: UserType;
+  password: string;
 }
 
 export interface IUpateUser {

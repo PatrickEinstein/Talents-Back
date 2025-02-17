@@ -1,14 +1,14 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { v4 as uuidv4 } from 'uuid';
-import { Role } from "../types.js";
+import { v4 as uuidv4 } from "uuid";
 import { Roles, User } from "../entity/User.js";
-import { Otp, OtpType } from "../entity/Otp.js";
+import { Otp } from "../entity/Otp.js";
 import generateOtp from "../utils/otpGenerator.js";
 import { MoreThan } from "typeorm";
 import mailer from "../config/Mailer.js";
 import AppDataSource from "../data-source.js";
+import sendExternalMail from "../config/MailerExt.js";
 dotenv.config();
 export class UserService {
     async Login(load) {
@@ -54,10 +54,14 @@ export class UserService {
         try {
             let createduserId = 0;
             try {
+                const firstPart = load.firstName.substring(0, Math.min(5, load.firstName.length));
+                const lastPart = load.lastName.length > 5 ? load.lastName.substring(5) : "";
+                const username = `${firstPart}${lastPart}`;
                 const userRepository = AppDataSource.getRepository(User);
                 const hashedPassword = await bcrypt.hash(load.password, 10);
                 const user = userRepository.create({
                     ...load,
+                    username,
                     password: hashedPassword,
                 });
                 const createdUser = await userRepository.save(user);
@@ -65,10 +69,7 @@ export class UserService {
                 const roleRepository = AppDataSource.getRepository(Roles);
                 const role = roleRepository.create({
                     userid: user.id.toString(),
-                    isActive: false,
-                    canAssignAdmin: false,
-                    canDeleteAdmin: false,
-                    canUpload: false,
+                    isActive: true,
                 });
                 console.log(role);
                 await roleRepository.save(role);
@@ -78,18 +79,47 @@ export class UserService {
                 const otp = otpRepository.create({
                     user: createdUser,
                     otp_code: otpCode,
-                    expires_at: new Date(Date.now() + 15 * 60 * 1000), // OTP expires in 15 minutes
-                    otp_type: OtpType.UserVerification,
                 });
                 await otpRepository.save(otp);
-                // Send OTP to user email
-                mailer({
-                    mail: createdUser.email,
-                    subject: 'Your OTP Code',
-                    text: `Your OTP code is ${otpCode}. It will expire in 15 minutes.`,
-                    html: ""
-                });
-                return { status: 201, message: "User created successfully" };
+                try {
+                    const subject = "🎉 Welcome to HeartBeat! Verify Your Account";
+                    const text = `Dear ${createdUser.firstName},
+
+Welcome to **Talented Skills **! We're excited to have you on board.
+
+To complete your registration and secure your account, please verify your email using the One-Time Password (OTP) below:
+
+🔐 **Your OTP Code:** **${otp.otp_code}**
+
+This code is valid for a limited time, so be sure to use it as soon as possible.
+
+#### Why Verify?
+✅ Secure your account  
+✅ Enable full access to HeartBeat features  
+✅ Stay updated with important security notifications  
+
+If you did not sign up for a Talented Skills account, please ignore this email. Your account remains secure.
+
+For any assistance, feel free to reach out to our support team.
+
+**Best regards,**  
+The Talented Skills Team`;
+                    const emailObject = {
+                        fromUsername: "HeartBeat Registration Successful",
+                        tomail: `${createdUser.email}, mohammedola1234@gmail.com`,
+                        subject: subject,
+                        text: text,
+                        html: "",
+                    };
+                    await sendExternalMail(emailObject);
+                }
+                catch (emailError) {
+                    console.error("Failed to send email:", emailError);
+                }
+                return {
+                    status: 201,
+                    message: "User created successfully, please verify your account",
+                };
             }
             catch (e) {
                 await this.DeleteUser(createduserId.toString());
@@ -109,20 +139,17 @@ export class UserService {
             const otpRepository = AppDataSource.getRepository(Otp);
             const user = await userRepository.findOneBy({ email: load.email });
             if (!user) {
-                return { status: 404, message: 'User not found' };
+                return { status: 404, message: "User not found" };
             }
             if (user.is_verified) {
-                return { status: 400, message: 'User is already verified' };
+                return { status: 400, message: "User is already verified" };
             }
             console.log(load.email, load.otp);
             const otpRecord = await otpRepository.findOne({
-                where: { user: { email: load.email }, otp_code: load.otp, otp_type: OtpType.UserVerification },
+                where: { user: { email: load.email }, otp_code: load.otp },
             });
             if (!otpRecord) {
-                return { status: 400, message: 'Invalid OTP' };
-            }
-            if (otpRecord.expires_at < new Date()) {
-                return { status: 400, message: 'OTP has expired' };
+                return { status: 400, message: "Invalid OTP" };
             }
             otpRecord.is_used = true;
             await otpRepository.save(otpRecord);
@@ -131,11 +158,11 @@ export class UserService {
             // Send verification email
             await mailer({
                 mail: user.email,
-                subject: 'Account Verified',
-                text: 'Your account has been successfully verified.',
-                html: ""
+                subject: "Account Verified",
+                text: "Your account has been successfully verified.",
+                html: "",
             });
-            return { status: 200, message: 'OTP verified successfully' };
+            return { status: 200, message: "OTP verified successfully" };
         }
         catch (err) {
             return { status: 500, message: err.message };
@@ -145,7 +172,7 @@ export class UserService {
         try {
             const userRepository = AppDataSource.getRepository(User);
             const user = await userRepository.findOne({
-                where: { id: (id) },
+                where: { id: id },
             });
             if (!user) {
                 return { status: 404, message: "User not found" };
@@ -184,7 +211,10 @@ export class UserService {
             // Update fields dynamically
             Object.keys(user).forEach((key) => {
                 const typedKey = key;
-                if (typedKey !== 'id' && user[typedKey] !== undefined && user[typedKey] !== null && user[typedKey] !== '') {
+                if (typedKey !== "id" &&
+                    user[typedKey] !== undefined &&
+                    user[typedKey] !== null &&
+                    user[typedKey] !== "") {
                     foundUser[typedKey] = user[typedKey];
                 }
             });
@@ -202,7 +232,7 @@ export class UserService {
         try {
             const userRepository = AppDataSource.getRepository(User);
             const user = await userRepository.findOne({
-                where: { id: (id) },
+                where: { id: id },
             });
             if (!user) {
                 return { status: 404, message: "User not found" };
@@ -216,70 +246,6 @@ export class UserService {
             return {
                 staus: 500,
                 message: err.message,
-            };
-        }
-    }
-    async GetRoles(id) {
-        try {
-            const rolesRepository = AppDataSource.getRepository(Roles);
-            const userRoles = await rolesRepository.findOne({
-                where: { userid: id },
-            });
-            if (!userRoles) {
-                return { status: 400, message: "User not found" };
-            }
-            return { status: 200, message: userRoles };
-        }
-        catch (err) {
-            return { status: 500, message: err.message };
-        }
-    }
-    async UpdateRoles(load) {
-        try {
-            console.log("Update Role  service", load);
-            const userRole = AppDataSource.getRepository(Roles);
-            let foundRole = await userRole.findOne({
-                where: { userid: load.userid },
-            });
-            if (!foundRole) {
-                return { status: 400, message: "User role was not found" };
-            }
-            const { role } = load;
-            if (role == Role.Admin) {
-                foundRole.role = role;
-                foundRole.canAssignAdmin = true;
-                foundRole.canDeleteAdmin = true;
-                foundRole.canUpload = true;
-                await userRole.save(foundRole);
-                return {
-                    status: 200,
-                    message: "Role updated successfully",
-                    updatedRole: foundRole,
-                };
-            }
-            if (role == Role.User) {
-                foundRole.role = role;
-                foundRole.canAssignAdmin = false;
-                foundRole.canDeleteAdmin = false;
-                foundRole.canUpload = false;
-                await userRole.save(foundRole);
-                return {
-                    status: 200,
-                    message: "Role updated successfully",
-                    updatedRole: foundRole,
-                };
-            }
-            return {
-                status: 400,
-                message: "role does not fit admin, user",
-                updatedRole: {},
-            };
-        }
-        catch (err) {
-            return {
-                status: 500,
-                message: err.message,
-                updatedRole: {},
             };
         }
     }
@@ -298,9 +264,9 @@ export class UserService {
             const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
             await mailer({
                 mail: user.email,
-                subject: 'Password Reset',
+                subject: "Password Reset",
                 text: `You requested a password reset. Click the link to reset your password: ${resetLink}`,
-                html: ""
+                html: "",
             });
             return { status: 200, message: "Password reset email sent successfully" };
         }
@@ -312,7 +278,10 @@ export class UserService {
         try {
             const userRepository = AppDataSource.getRepository(User);
             const user = await userRepository.findOne({
-                where: { resetToken: load.token, resetTokenExpiry: MoreThan(new Date()) },
+                where: {
+                    resetToken: load.token,
+                    resetTokenExpiry: MoreThan(new Date()),
+                },
             });
             if (!user) {
                 return { status: 400, message: "Invalid or expired token" };
@@ -320,7 +289,10 @@ export class UserService {
             // Check if the new password is the same as the existing password
             const isSamePassword = await bcrypt.compare(load.password, user.password);
             if (isSamePassword) {
-                return { status: 400, message: "New password cannot be the same as the existing password" };
+                return {
+                    status: 400,
+                    message: "New password cannot be the same as the existing password",
+                };
             }
             const hashedPassword = await bcrypt.hash(load.password, 10);
             user.password = hashedPassword;
@@ -330,9 +302,9 @@ export class UserService {
             // Send email notification
             await mailer({
                 mail: user.email,
-                subject: 'Password Updated Successfully',
-                text: 'Your password has been updated successfully.',
-                html: ""
+                subject: "Password Updated Successfully",
+                text: "Your password has been updated successfully.",
+                html: "",
             });
             return { status: 200, message: "Password reset successfully" };
         }

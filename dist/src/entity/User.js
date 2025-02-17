@@ -30,18 +30,27 @@ export var KYCStatus;
     KYCStatus["Approved"] = "Approved";
     KYCStatus["Rejected"] = "Rejected";
 })(KYCStatus || (KYCStatus = {}));
+export var AccountStatus;
+(function (AccountStatus) {
+    AccountStatus["Pending"] = "Pending";
+    AccountStatus["Approved"] = "Approved";
+})(AccountStatus || (AccountStatus = {}));
 let User = class User extends BaseModel {
-    first_name;
-    last_name;
-    dob;
-    username;
+    firstName;
+    lastName;
     email;
-    phone_number;
+    phone;
+    dOB;
     nationality;
+    state;
+    city;
+    username;
+    password;
+    account_status;
+    //-------------- KYC DETAILS --------------------------------
     NIN;
     BVN;
     accountNumber;
-    password;
     user_type;
     account_tier;
     address;
@@ -55,38 +64,57 @@ let User = class User extends BaseModel {
 };
 __decorate([
     Column({ nullable: false }),
-    IsNotEmpty({ message: "first_name is required" }),
+    IsNotEmpty({ message: "firstName is required" }),
     __metadata("design:type", String)
-], User.prototype, "first_name", void 0);
+], User.prototype, "firstName", void 0);
 __decorate([
     Column({ nullable: false }),
-    IsNotEmpty({ message: "last_name is required" }),
+    IsNotEmpty({ message: "lastName is required" }),
     __metadata("design:type", String)
-], User.prototype, "last_name", void 0);
-__decorate([
-    Column({ nullable: false }),
-    IsNotEmpty({ message: "dob - is required" }),
-    __metadata("design:type", Date)
-], User.prototype, "dob", void 0);
-__decorate([
-    Column({ unique: true, nullable: false }),
-    IsNotEmpty({ message: "username is required" }),
-    __metadata("design:type", String)
-], User.prototype, "username", void 0);
+], User.prototype, "lastName", void 0);
 __decorate([
     Column({ unique: true, nullable: false }),
     IsNotEmpty({ message: "email is required" }),
     __metadata("design:type", String)
 ], User.prototype, "email", void 0);
 __decorate([
-    Column({ unique: true, nullable: true }),
+    Column({ unique: true, nullable: false }),
     __metadata("design:type", String)
-], User.prototype, "phone_number", void 0);
+], User.prototype, "phone", void 0);
+__decorate([
+    Column({ nullable: false }),
+    IsNotEmpty({ message: "dob - is required" }),
+    __metadata("design:type", Date)
+], User.prototype, "dOB", void 0);
 __decorate([
     Column({ nullable: false, default: "Nigeria" }),
     IsNotEmpty({ message: "nationality is required" }),
     __metadata("design:type", String)
 ], User.prototype, "nationality", void 0);
+__decorate([
+    Column({ nullable: false }),
+    IsNotEmpty({ message: "state is required" }),
+    __metadata("design:type", String)
+], User.prototype, "state", void 0);
+__decorate([
+    Column({ nullable: false }),
+    IsNotEmpty({ message: "city is required" }),
+    __metadata("design:type", String)
+], User.prototype, "city", void 0);
+__decorate([
+    Column({ unique: true, nullable: false }),
+    IsNotEmpty({ message: "username is required" }),
+    __metadata("design:type", String)
+], User.prototype, "username", void 0);
+__decorate([
+    Column({ nullable: false }),
+    IsNotEmpty({ message: "password is required" }),
+    __metadata("design:type", String)
+], User.prototype, "password", void 0);
+__decorate([
+    Column({ type: "enum", enum: AccountStatus, default: AccountStatus.Pending }),
+    __metadata("design:type", String)
+], User.prototype, "account_status", void 0);
 __decorate([
     Column({ unique: true, nullable: true, length: 11 }),
     __metadata("design:type", String)
@@ -99,11 +127,6 @@ __decorate([
     Column({ unique: true, nullable: true, length: 10 }),
     __metadata("design:type", String)
 ], User.prototype, "accountNumber", void 0);
-__decorate([
-    Column({ nullable: false }),
-    IsNotEmpty({ message: "password is required" }),
-    __metadata("design:type", String)
-], User.prototype, "password", void 0);
 __decorate([
     Column({ type: "enum", enum: UserType, default: UserType.User }),
     __metadata("design:type", String)
@@ -137,24 +160,21 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "KYC_status", void 0);
 __decorate([
-    Column({ type: 'uuid', nullable: true }),
+    Column({ type: "uuid", nullable: true }),
     __metadata("design:type", Object)
 ], User.prototype, "resetToken", void 0);
 __decorate([
-    Column({ type: 'timestamp', nullable: true }),
+    Column({ type: "timestamp", nullable: true }),
     __metadata("design:type", Object)
 ], User.prototype, "resetTokenExpiry", void 0);
 User = __decorate([
-    Entity('user')
+    Entity("user")
 ], User);
 export { User };
 let Roles = class Roles extends BaseModel {
     userid;
     role;
     isActive;
-    canAssignAdmin;
-    canDeleteAdmin;
-    canUpload;
 };
 __decorate([
     Column({ unique: true, nullable: false }),
@@ -169,19 +189,7 @@ __decorate([
     Column(),
     __metadata("design:type", Boolean)
 ], Roles.prototype, "isActive", void 0);
-__decorate([
-    Column(),
-    __metadata("design:type", Boolean)
-], Roles.prototype, "canAssignAdmin", void 0);
-__decorate([
-    Column(),
-    __metadata("design:type", Boolean)
-], Roles.prototype, "canDeleteAdmin", void 0);
-__decorate([
-    Column(),
-    __metadata("design:type", Boolean)
-], Roles.prototype, "canUpload", void 0);
 Roles = __decorate([
-    Entity('roles')
+    Entity("roles")
 ], Roles);
 export { Roles };

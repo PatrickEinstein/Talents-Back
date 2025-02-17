@@ -11,7 +11,6 @@ import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
 import { BaseModel } from "./BaseModel.js";
 import { User } from "./User.js";
 import { Transaction } from "./Transaction.js";
-import { Trade } from "./Trade.js";
 export var AppealStatus;
 (function (AppealStatus) {
     AppealStatus["Pending"] = "Pending";
@@ -21,7 +20,6 @@ export var AppealStatus;
 let Appeal = class Appeal extends BaseModel {
     user;
     transaction;
-    trade;
     appeal_reason;
     appeal_status;
     appeal_date;
@@ -40,13 +38,6 @@ __decorate([
     ,
     __metadata("design:type", Transaction)
 ], Appeal.prototype, "transaction", void 0);
-__decorate([
-    ManyToOne(() => Trade, (trade) => trade.id, { onDelete: "CASCADE" }) // Foreign key relationship
-    ,
-    JoinColumn({ name: "trade_id" }) // Maps this column to the `id` in Trade
-    ,
-    __metadata("design:type", Trade)
-], Appeal.prototype, "trade", void 0);
 __decorate([
     Column(),
     __metadata("design:type", String)

@@ -1,7 +1,7 @@
-import express from 'express';
-import { UserController } from '../controller/userController.js';
-import TokenVerification from '../middlewares/TokenVerification.js';
-import IsOwner from '../middlewares/IsOwner.js';
+import express from "express";
+import { UserController } from "../controller/userController.js";
+import TokenVerification from "../middlewares/TokenVerification.js";
+import IsOwner from "../middlewares/IsOwner.js";
 const userRouter = express.Router();
 const userController = new UserController();
 /**
@@ -40,7 +40,7 @@ const userController = new UserController();
 userRouter.post("/api/login", userController.Login);
 /**
  * @openapi
- * /api/create:
+ * /api/signup:
  *   post:
  *     summary: Create a new user
  *     tags:
@@ -52,37 +52,46 @@ userRouter.post("/api/login", userController.Login);
  *           schema:
  *             type: object
  *             properties:
- *               first_name:
+ *               firstName:
  *                 type: string
- *               last_name:
+ *               lastName:
  *                 type: string
- *               dob:
- *                 type: string
- *                 format: date
  *               email:
  *                 type: string
- *               password:
+ *                 format: email
+ *               phone:
+ *                 type: string
+ *               dOB:
+ *                 type: string
+ *                 format: date
+ *               nationality:
+ *                 type: string
+ *               state:
+ *                 type: string
+ *               city:
  *                 type: string
  *               username:
  *                 type: string
- *               user_type:
+ *               password:
  *                 type: string
- *                 enum: [Admin, Merchant, Customer]
  *             required:
- *               - first_name
- *               - last_name
- *               - dob
+ *               - firstName
+ *               - lastName
  *               - email
- *               - password
+ *               - phone
+ *               - dOB
+ *               - nationality
+ *               - state
+ *               - city
  *               - username
- *               - user_type
+ *               - password
  *     responses:
  *       201:
  *         description: User created successfully
  *       400:
  *         description: Bad request
  */
-userRouter.post("/api/create", userController.CreateUser);
+userRouter.post("/api/signup", userController.CreateUser);
 /**
  * @openapi
  * '/api/verify-otp':
@@ -244,68 +253,6 @@ userRouter.patch("/api/update", TokenVerification, IsOwner, userController.Updat
  *        description: User not found
  */
 userRouter.delete("/api/delete/:id", TokenVerification, IsOwner, userController.DeleteUser);
-/**
- * @openapi
- * '/api/update-role':
- *  put:
- *     tags:
- *     - User
- *     summary: Update user roles
- *     requestBody:
- *      required: true
- *      content:
- *        application/json:
- *           schema:
- *            type: object
- *            properties:
- *              userid:
- *                type: string
- *              role:
- *                type: string
- *     responses:
- *      200:
- *        description: User role updated successfully
- *        content:
- *          application/json:
- *            schema:
- *              type: object
- *              properties:
- *                status:
- *                  type: number
- *                message:
- *                  type: string
- */
-userRouter.put("/api/update-role", userController.updateRoles);
-/**
- * @openapi
- * '/api/role/{id}':
- *  get:
- *     tags:
- *     - User
- *     summary: Get a dole by userid
- *     parameters:
- *      - name: id
- *        in: path
- *        required: true
- *        schema:
- *          type: string
- *          format: uuid
- *     responses:
- *      200:
- *        description: User fetched successfully
- *        content:
- *          application/json:
- *            schema:
- *              type: object
- *              properties:
- *                status:
- *                  type: number
- *                message:
- *                  type: string
- *      404:
- *        description: User not found
- */
-userRouter.get("/api/role/:id", userController.getRoles);
 /**
  * @openapi
  * '/api/forget-password':

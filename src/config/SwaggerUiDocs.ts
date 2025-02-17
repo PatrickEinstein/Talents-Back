@@ -16,6 +16,7 @@ if (ENV === "LINUX") {
   directoryPath = path.join(__dirname, "..", "routes", "*.js").slice(1);
 }
 
+
 // Decode the path if necessary (only for special characters)
 const decodedPath = directoryPath.includes("%")
   ? decodeURIComponent(directoryPath)
@@ -28,9 +29,9 @@ const options = {
   definition: {
     openapi: "3.0.3",
     info: {
-      title: "Green Barter API",
+      title: "Talented Skills network api",
       version: "1.7.1",
-      description: "This is the api for green barter",
+      description: "This is the api for talented skills",
       // contact: {
       //   name: "Patrick",
       //   url: "folio.vercel.app",

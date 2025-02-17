@@ -38,17 +38,6 @@ export class UserController {
         const response = await this.user.DeleteUser(id);
         res.status(200).json(response);
     };
-    getRoles = async (req, res) => {
-        const { id } = req.params;
-        const response = await this.user.GetRoles(id);
-        res.status(200).json(response);
-    };
-    updateRoles = async (req, res) => {
-        console.log('role controller', req.body);
-        const body = req.body;
-        const response = await this.user.UpdateRoles(body);
-        res.status(200).json(response);
-    };
     sendPasswordResetMail = async (req, res) => {
         const { email } = req.body;
         const response = await this.user.SendPasswordResetMail(email);

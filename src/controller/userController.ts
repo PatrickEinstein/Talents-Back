@@ -51,18 +51,9 @@ export class UserController {
     res.status(200).json(response);
   };
 
-  getRoles: RequestHandler = async (req, res) => {
-    const { id } = req.params;
-    const response = await this.user.GetRoles(id);
-    res.status(200).json(response);
-  };
 
-  updateRoles: RequestHandler = async (req, res) => {
-    console.log('role controller', req.body)
-    const body = req.body as IUpdateRole;
-    const response = await this.user.UpdateRoles(body);
-    res.status(200).json(response);
-  };
+
+
 
   sendPasswordResetMail: RequestHandler = async (req, res) => {
     const { email } = req.body;

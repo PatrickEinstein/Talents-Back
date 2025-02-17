@@ -3,7 +3,6 @@ import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { Role } from "../types.js";
 import { BaseModel } from "./BaseModel.js";
 
-
 export enum UserType {
   SuperAdmin = "SuperAdmin",
   Admin = "Admin",
@@ -23,34 +22,55 @@ export enum KYCStatus {
   Rejected = "Rejected",
 }
 
-@Entity('user')
+export enum AccountStatus {
+  Pending = "Pending",
+  Approved = "Approved",
+}
+
+@Entity("user")
 export class User extends BaseModel {
   @Column({ nullable: false })
-  @IsNotEmpty({ message: "first_name is required" })
-  first_name!: string;
+  @IsNotEmpty({ message: "firstName is required" })
+  firstName!: string;
 
   @Column({ nullable: false })
-  @IsNotEmpty({ message: "last_name is required" })
-  last_name!: string;
-
-  @Column({ nullable: false })
-  @IsNotEmpty({ message: "dob - is required" })
-  dob!: Date;
-
-  @Column({ unique: true, nullable: false })
-  @IsNotEmpty({ message: "username is required" })
-  username!: string;
+  @IsNotEmpty({ message: "lastName is required" })
+  lastName!: string;
 
   @Column({ unique: true, nullable: false })
   @IsNotEmpty({ message: "email is required" })
   email!: string;
 
-  @Column({ unique: true, nullable: true})
-  phone_number!: string;
+  @Column({ unique: true, nullable: false })
+  phone!: string;
+
+  @Column({ nullable: false })
+  @IsNotEmpty({ message: "dob - is required" })
+  dOB!: Date;
 
   @Column({ nullable: false, default: "Nigeria" })
-  @IsNotEmpty({ message:"nationality is required" })
+  @IsNotEmpty({ message: "nationality is required" })
   nationality!: string;
+
+  @Column({ nullable: false })
+  @IsNotEmpty({ message: "state is required" })
+  state!: string;
+
+  @Column({ nullable: false })
+  @IsNotEmpty({ message: "city is required" })
+  city!: string;
+
+  @Column({ unique: true, nullable: false })
+  @IsNotEmpty({ message: "username is required" })
+  username!: string;
+
+  @Column({ nullable: false })
+  @IsNotEmpty({ message: "password is required" })
+  password!: string;
+
+  @Column({ type: "enum", enum: AccountStatus, default: AccountStatus.Pending })
+  account_status!: AccountStatus;
+  //-------------- KYC DETAILS --------------------------------
 
   @Column({ unique: true, nullable: true, length: 11 })
   NIN!: string;
@@ -60,11 +80,6 @@ export class User extends BaseModel {
 
   @Column({ unique: true, nullable: true, length: 10 })
   accountNumber!: string;
-
-
-  @Column({ nullable: false })
-  @IsNotEmpty({ message: "password is required" })
-  password!: string;
 
   @Column({ type: "enum", enum: UserType, default: UserType.User })
   user_type!: UserType;
@@ -90,15 +105,15 @@ export class User extends BaseModel {
   @Column({ type: "enum", enum: KYCStatus, default: KYCStatus.NotStarted })
   KYC_status!: KYCStatus;
 
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ type: "uuid", nullable: true })
   resetToken!: string | null;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: "timestamp", nullable: true })
   resetTokenExpiry!: Date | null;
 }
 
-@Entity('roles')
-export class Roles extends BaseModel{
+@Entity("roles")
+export class Roles extends BaseModel {
   @Column({ unique: true, nullable: false })
   @IsNotEmpty({ message: "userid is required" })
   userid!: string;
@@ -109,14 +124,4 @@ export class Roles extends BaseModel{
   @Column()
   isActive!: boolean;
 
-  @Column()
-  canAssignAdmin!: boolean;
-
-  @Column()
-  canDeleteAdmin!: boolean;
-
-  @Column()
-  canUpload!: boolean;
 }
-
-

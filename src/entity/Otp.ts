@@ -2,11 +2,7 @@ import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
 import { BaseModel } from "./BaseModel.js";
 import { User } from "./User.js";
 
-export enum OtpType {
-  UserVerification = "user_verification",
-  TransactionValidation = "transaction_validation",
-  AccountDeletion = "account_deletion",
-}
+
 
 @Entity()
 export class Otp extends BaseModel {
@@ -17,12 +13,9 @@ export class Otp extends BaseModel {
   @Column({ nullable: false })
   otp_code!: string;
 
-  @Column({ type: "timestamp", nullable: false })
-  expires_at!: Date;
 
   @Column({ default: false })
   is_used!: boolean;
 
-  @Column({ type: "enum", enum: OtpType, nullable: false })
-  otp_type!: OtpType;
+
 }

@@ -7,6 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var _a;
 import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
 import { BaseModel } from "./BaseModel.js";
 import { Customer } from "./Customer.js";
@@ -27,7 +28,7 @@ __decorate([
     ,
     JoinColumn({ name: "customer_id" }) // Maps this column to the `id` in Customer
     ,
-    __metadata("design:type", Customer)
+    __metadata("design:type", typeof (_a = typeof Customer !== "undefined" && Customer) === "function" ? _a : Object)
 ], GiftCard.prototype, "customer", void 0);
 __decorate([
     Column(),
