@@ -92,6 +92,8 @@ export class UserService {
             });
             console.log(role);
             await roleRepository.save(role);
+            //First delete all existing otp for this user
+            otpRepository.delete({ email: user.email });
             // Generate and save OTP
             const otpCode = generateOtp();
             const otp = otpRepository.create({
@@ -196,11 +198,11 @@ The Talented Skills Team`;
             return { status: 500, message: err.message };
         }
     }
-    async GetUser(id) {
+    async GetUser(email) {
         try {
             const userRepository = AppDataSource.getRepository(User);
             const user = await userRepository.findOne({
-                where: { id: id },
+                where: { email: email },
             });
             if (!user) {
                 return { status: 404, message: "User not found" };

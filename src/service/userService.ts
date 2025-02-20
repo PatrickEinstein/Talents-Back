@@ -134,6 +134,9 @@ export class UserService implements IUser {
       console.log(role);
       await roleRepository.save(role);
 
+      //First delete all existing otp for this user
+      otpRepository.delete({ email: user.email });
+
       // Generate and save OTP
       const otpCode = generateOtp();
       const otp = otpRepository.create({
@@ -191,7 +194,7 @@ The Talented Skills Team`;
   }
 
   async VerifyOtp(load: IVerifyOtp): Promise<VerifyOtpResponse> {
-    console.log(`VerifyOtp`, load)
+    console.log(`VerifyOtp`, load);
     try {
       const userRepository = AppDataSource.getRepository(User);
       const otpRepository = AppDataSource.getRepository(Otp);
@@ -246,11 +249,11 @@ The Talented Skills Team`;
     }
   }
 
-  async GetUser(id: string) {
+  async GetUser(email: string) {
     try {
       const userRepository = AppDataSource.getRepository(User);
       const user = await userRepository.findOne({
-        where: { id: id },
+        where: { email: email },
       });
       if (!user) {
         return { status: 404, message: "User not found" };
