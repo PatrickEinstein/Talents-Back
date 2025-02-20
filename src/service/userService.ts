@@ -137,7 +137,7 @@ export class UserService implements IUser {
       // Generate and save OTP
       const otpCode = generateOtp();
       const otp = otpRepository.create({
-        user: createdUser,
+        email: createdUser.email,
         otp_code: otpCode,
       });
       const subject =
@@ -191,6 +191,7 @@ The Talented Skills Team`;
   }
 
   async VerifyOtp(load: IVerifyOtp): Promise<VerifyOtpResponse> {
+    console.log(`VerifyOtp`, load)
     try {
       const userRepository = AppDataSource.getRepository(User);
       const otpRepository = AppDataSource.getRepository(Otp);
@@ -207,15 +208,20 @@ The Talented Skills Team`;
       }
 
       const otpRecord = await otpRepository.findOne({
-        where: { user: { email: load.email }, otp_code: load.otp },
+        where: { email: load.email, otp_code: load.otp },
       });
 
       if (!otpRecord) {
         return { status: 400, message: "Invalid OTP" };
       }
 
-      otpRecord.is_used = true;
-      await otpRepository.save(otpRecord);
+      // otpRecord.is_used = true;
+      // await otpRepository.save(otpRecord);
+
+      await otpRepository.delete({
+        otp_code: load.otp,
+        email: load.email,
+      });
 
       user.is_verified = true;
       await userRepository.save(user);

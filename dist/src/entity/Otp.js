@@ -7,21 +7,20 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
+import { Entity, Column } from "typeorm";
 import { BaseModel } from "./BaseModel.js";
-import { User } from "./User.js";
 let Otp = class Otp extends BaseModel {
-    user;
+    // @ManyToOne(() => User, (user) => user.email, { onDelete: "CASCADE" }) // Foreign key relationship
+    // @JoinColumn({ name: "user_email", referencedColumnName: "email" }) // Maps this column to the `email` in User
+    // user!: User;
+    email;
     otp_code;
     is_used;
 };
 __decorate([
-    ManyToOne(() => User, (user) => user.email, { onDelete: "CASCADE" }) // Foreign key relationship
-    ,
-    JoinColumn({ name: "user_email", referencedColumnName: "email" }) // Maps this column to the `email` in User
-    ,
-    __metadata("design:type", User)
-], Otp.prototype, "user", void 0);
+    Column({ nullable: false }),
+    __metadata("design:type", String)
+], Otp.prototype, "email", void 0);
 __decorate([
     Column({ nullable: false }),
     __metadata("design:type", String)
