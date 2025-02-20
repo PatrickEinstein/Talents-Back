@@ -37,6 +37,7 @@ export interface IUpdateRole {
 }
 
 export interface IVerifyOtp {
+  token2: string;
   email: string;
   otp: string;
 }

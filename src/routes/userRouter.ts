@@ -128,7 +128,7 @@ userRouter.post("/api/signup", userController.CreateUser);
  *                message:
  *                  type: string
  */
-userRouter.post("/api/verify-otp", userController.VerifyOtp);
+userRouter.post("/api/otp/verify-otp", userController.VerifyOtp);
 
 /**
  * @openapi

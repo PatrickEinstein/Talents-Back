@@ -21,6 +21,7 @@ export class UserService {
                     message: "User not found",
                     id: "",
                     token: "",
+                    user_verified: false,
                 };
             }
             const isPasswordValid = await bcrypt.compare(load.password, user.password);
@@ -30,6 +31,7 @@ export class UserService {
                     message: "Invalid password",
                     id: "",
                     token: "",
+                    user_verified: false,
                 };
             }
             const token = jwt.sign({ id: user.id, email: user.email, user_type: user.user_type }, process.env.SECRET_KEY, {
@@ -40,6 +42,8 @@ export class UserService {
                 message: `Welcome ${user.username}`,
                 id: user.id,
                 token,
+                user_verified: user.is_verified,
+                token2: user.personalToken,
             };
         }
         catch (err) {
@@ -51,39 +55,51 @@ export class UserService {
     }
     async CreateUser(load) {
         console.log(`CreatingUserLoad-backend`, load);
+        let createduserId = 0;
+        const userRepository = AppDataSource.getRepository(User);
+        const roleRepository = AppDataSource.getRepository(Roles);
+        const otpRepository = AppDataSource.getRepository(Otp);
         try {
-            let createduserId = 0;
-            try {
-                const firstPart = load.firstName.substring(0, Math.min(5, load.firstName.length));
-                const lastPart = load.lastName.length > 5 ? load.lastName.substring(5) : "";
-                const username = `${firstPart}${lastPart}`;
-                const userRepository = AppDataSource.getRepository(User);
-                const hashedPassword = await bcrypt.hash(load.password, 10);
-                const user = userRepository.create({
-                    ...load,
-                    username,
-                    password: hashedPassword,
-                });
-                const createdUser = await userRepository.save(user);
-                createduserId = +createdUser.id;
-                const roleRepository = AppDataSource.getRepository(Roles);
-                const role = roleRepository.create({
-                    userid: user.id.toString(),
-                    isActive: true,
-                });
-                console.log(role);
-                await roleRepository.save(role);
-                // Generate and save OTP
-                const otpCode = generateOtp();
-                const otpRepository = AppDataSource.getRepository(Otp);
-                const otp = otpRepository.create({
-                    user: createdUser,
-                    otp_code: otpCode,
-                });
-                await otpRepository.save(otp);
-                try {
-                    const subject = "🎉 Welcome to HeartBeat! Verify Your Account";
-                    const text = `Dear ${createdUser.firstName},
+            const isExistingUser = await userRepository.findOne({
+                where: {
+                    email: load.email,
+                },
+            });
+            if (isExistingUser) {
+                return {
+                    status: 400,
+                    message: "An account is already associated with this user",
+                };
+            }
+            const firstPart = load.firstName.substring(0, Math.min(5, load.firstName.length));
+            const lastPart = load.lastName.length > 5 ? load.lastName.substring(5) : "";
+            const username = `${firstPart}${lastPart}`;
+            const hashedPassword = await bcrypt.hash(load.password, 10);
+            const rawToken = `${hashedPassword}${hashedPassword}`;
+            let personalToken = (await bcrypt.hash(rawToken, 10)).toString();
+            personalToken = personalToken.replace(/[\\/]/g, "");
+            const user = userRepository.create({
+                ...load,
+                username,
+                password: hashedPassword,
+                personalToken: personalToken,
+            });
+            const createdUser = await userRepository.save(user);
+            createduserId = +createdUser.id;
+            const role = roleRepository.create({
+                userid: user.id.toString(),
+                isActive: true,
+            });
+            console.log(role);
+            await roleRepository.save(role);
+            // Generate and save OTP
+            const otpCode = generateOtp();
+            const otp = otpRepository.create({
+                user: createdUser,
+                otp_code: otpCode,
+            });
+            const subject = "🎉 Welcome to Talented Skills Platform! Verify Your Account";
+            const text = `Dear ${createdUser.firstName},
 
 Welcome to **Talented Skills **! We're excited to have you on board.
 
@@ -99,34 +115,33 @@ This code is valid for a limited time, so be sure to use it as soon as possible.
 ✅ Stay updated with important security notifications  
 
 If you did not sign up for a Talented Skills account, please ignore this email. Your account remains secure.
-
 For any assistance, feel free to reach out to our support team.
 
 **Best regards,**  
 The Talented Skills Team`;
-                    const emailObject = {
-                        fromUsername: "HeartBeat Registration Successful",
-                        tomail: `${createdUser.email}, mohammedola1234@gmail.com`,
-                        subject: subject,
-                        text: text,
-                        html: "",
-                    };
-                    await sendExternalMail(emailObject);
-                }
-                catch (emailError) {
-                    console.error("Failed to send email:", emailError);
-                }
-                return {
-                    status: 201,
-                    message: "User created successfully, please verify your account",
-                };
+            const emailObject = {
+                fromUsername: "Talented Skills Network",
+                tomail: `${createdUser.email}, mohammedola1234@gmail.com`,
+                subject: subject,
+                text: text,
+                html: "",
+            };
+            await otpRepository.save(otp);
+            try {
+                await sendExternalMail(emailObject);
             }
-            catch (e) {
-                await this.DeleteUser(createduserId.toString());
-                return { status: 400, message: e.message };
+            catch (emailError) {
+                console.error("Failed to send email:", emailError);
             }
+            return {
+                status: 201,
+                message: `Welcome ${load.firstName}, login in to confirm your account`,
+            };
         }
         catch (err) {
+            console.log(`Error creating user==>`, err);
+            await this.DeleteUser(createduserId.toString());
+            await roleRepository.delete({ userid: createduserId.toString() });
             return {
                 status: 500,
                 message: err.message,
@@ -137,14 +152,15 @@ The Talented Skills Team`;
         try {
             const userRepository = AppDataSource.getRepository(User);
             const otpRepository = AppDataSource.getRepository(Otp);
-            const user = await userRepository.findOneBy({ email: load.email });
+            const user = await userRepository.findOneBy({
+                personalToken: load.token2,
+            });
             if (!user) {
                 return { status: 404, message: "User not found" };
             }
             if (user.is_verified) {
                 return { status: 400, message: "User is already verified" };
             }
-            console.log(load.email, load.otp);
             const otpRecord = await otpRepository.findOne({
                 where: { user: { email: load.email }, otp_code: load.otp },
             });
@@ -155,13 +171,20 @@ The Talented Skills Team`;
             await otpRepository.save(otpRecord);
             user.is_verified = true;
             await userRepository.save(user);
-            // Send verification email
-            await mailer({
-                mail: user.email,
-                subject: "Account Verified",
+            const subject = "🎉 Welcome to Talented Skills Platform! Congratualtions on successful verification of your Account";
+            const emailObject = {
+                fromUsername: "Talented Skills Network",
+                tomail: `${load.email}, mohammedola1234@gmail.com`,
+                subject: subject,
                 text: "Your account has been successfully verified.",
                 html: "",
-            });
+            };
+            try {
+                await sendExternalMail(emailObject);
+            }
+            catch (emailError) {
+                console.error("Failed to send email:", emailError);
+            }
             return { status: 200, message: "OTP verified successfully" };
         }
         catch (err) {

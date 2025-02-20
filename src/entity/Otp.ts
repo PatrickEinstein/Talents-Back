@@ -17,5 +17,4 @@ export class Otp extends BaseModel {
   @Column({ default: false })
   is_used!: boolean;
 
-
 }

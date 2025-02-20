@@ -47,6 +47,7 @@ let User = class User extends BaseModel {
     username;
     password;
     account_status;
+    personalToken;
     //-------------- KYC DETAILS --------------------------------
     NIN;
     BVN;
@@ -115,6 +116,10 @@ __decorate([
     Column({ type: "enum", enum: AccountStatus, default: AccountStatus.Pending }),
     __metadata("design:type", String)
 ], User.prototype, "account_status", void 0);
+__decorate([
+    Column({ unique: true, nullable: false }),
+    __metadata("design:type", String)
+], User.prototype, "personalToken", void 0);
 __decorate([
     Column({ unique: true, nullable: true, length: 11 }),
     __metadata("design:type", String)

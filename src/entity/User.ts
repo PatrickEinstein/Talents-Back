@@ -70,6 +70,10 @@ export class User extends BaseModel {
 
   @Column({ type: "enum", enum: AccountStatus, default: AccountStatus.Pending })
   account_status!: AccountStatus;
+
+  @Column({ unique: true, nullable: false })
+  personalToken!: string;
+
   //-------------- KYC DETAILS --------------------------------
 
   @Column({ unique: true, nullable: true, length: 11 })
