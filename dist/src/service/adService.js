@@ -64,6 +64,7 @@ export class AdsService {
         }
     };
     async deleteAds(id) {
+        console.log(`delete ads id`, id);
         const response = new ServiceResponse();
         try {
             const adsRepo = AppDataSource.getRepository(MerchantAd);
@@ -78,39 +79,36 @@ export class AdsService {
         }
         return response;
     }
-    async updateAds(load) {
+    async updateAds(id, load) {
         const response = new ServiceResponse();
         try {
             const adsRepo = AppDataSource.getRepository(MerchantAd);
-            const foundAds = await adsRepo.findOne({
-                where: { id: load.id },
-            });
+            const foundAds = await adsRepo.findOne({ where: { id } });
+            console.log({ foundAds, load });
             if (!foundAds) {
-                response.data = null;
-                response.status = 404;
-                response.message = "No Ads found";
+                (response.data = null),
+                    (response.status = 404),
+                    (response.message = "No Ads found");
                 return response;
             }
-            Object.keys(load).forEach((key) => {
-                const typedKey = key;
-                if (typedKey !== "id" &&
-                    load[typedKey] !== undefined &&
-                    load[typedKey] !== null &&
-                    load[typedKey] !== "") {
-                    foundAds[typedKey] = load[typedKey];
+            // Update only non-empty fields except "id"
+            Object.entries(load).forEach(([key, value]) => {
+                if (key !== "id" && value) {
+                    foundAds[key] = value;
                 }
             });
             await adsRepo.save(foundAds);
-            response.data = foundAds;
-            response.message = "Ad updated successfully";
-            response.status = 200;
+            (response.data = foundAds),
+                (response.message = "Ad updated successfully"),
+                (response.status = 200);
+            return response;
         }
         catch (e) {
-            response.data = null;
-            response.message = e.message;
-            response.status = 500;
+            (response.data = null),
+                (response.message = e.message),
+                (response.status = 500);
+            return response;
         }
-        return response;
     }
     async getAdById(id) {
         const response = new ServiceResponse();
@@ -170,7 +168,6 @@ export class AdsService {
         const response = new ServiceResponse();
         try {
         }
-        catch (e) {
-        }
+        catch (e) { }
     }
 }

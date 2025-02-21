@@ -55,8 +55,6 @@ const controller = new AdsController();
  */
 adsRouter.post("/api/ads/create-ad", TokenVerification, controller.createAd);
 
-
-
 /**
  * @openapi
  * '/api/ads/all':
@@ -92,8 +90,6 @@ adsRouter.post("/api/ads/create-ad", TokenVerification, controller.createAd);
  *        description: User not found
  */
 adsRouter.get("/api/ads/all", TokenVerification, controller.getAllAvailableAds);
-
-
 
 /**
  * @openapi
@@ -173,7 +169,6 @@ adsRouter.get("/api/ads/user", TokenVerification, controller.getAdByUserId);
  */
 adsRouter.get("/api/ads/:id", TokenVerification, controller.getAdById);
 
-
 /**
  * @openapi
  * '/api/ads/{id}':
@@ -214,5 +209,39 @@ adsRouter.get("/api/ads/:id", TokenVerification, controller.getAdById);
  */
 adsRouter.delete("/api/ads/:id", TokenVerification, controller.deleteAds);
 
+/**
+ * @openapi
+ * /api/ads/update-ad/{id}:
+ *   put:
+ *     summary: Update an existing advertisement
+ *     tags:
+ *       - Ads
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the advertisement to update
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             additionalProperties: true
+ *     responses:
+ *       200:
+ *         description: Advertisement updated successfully
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Advertisement not found
+ */
+adsRouter.put(
+  "/api/ads/update-ad/:id",
+  TokenVerification,
+  controller.updateAds
+);
 
 export default adsRouter;

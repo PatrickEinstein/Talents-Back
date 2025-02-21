@@ -17,7 +17,7 @@ export var AdStatus;
 export var WorkMode;
 (function (WorkMode) {
     WorkMode["Remote"] = "Remote";
-    WorkMode["Onsite"] = "On-site";
+    WorkMode["Onsite"] = "On-Site";
     WorkMode["Hybrid"] = "Hybrid";
 })(WorkMode || (WorkMode = {}));
 export var Remuneration;

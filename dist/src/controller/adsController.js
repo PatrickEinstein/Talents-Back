@@ -57,8 +57,8 @@ export class AdsController {
     };
     deleteAds = async (req, res) => {
         try {
-            const { adsId } = req.params;
-            const newAd = await this.service.deleteAds(adsId);
+            const { id } = req.params;
+            const newAd = await this.service.deleteAds(id);
             res.json(newAd);
         }
         catch (error) {
@@ -70,7 +70,8 @@ export class AdsController {
     updateAds = async (req, res) => {
         try {
             const load = req.body;
-            const newAd = await this.service.updateAds(load);
+            const { id } = req.params;
+            const newAd = await this.service.updateAds(id, load);
             res.json(newAd);
         }
         catch (error) {

@@ -11,7 +11,7 @@ export enum AdStatus {
 
 export enum WorkMode {
   Remote = "Remote",
-  Onsite = "On-site",
+  Onsite = "On-Site",
   Hybrid = "Hybrid",
 }
 

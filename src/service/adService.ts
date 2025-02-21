@@ -73,6 +73,7 @@ export class AdsService {
   };
 
   async deleteAds(id: string): Promise<ServiceResponse<any>> {
+    console.log(`delete ads id`, id);
     const response = new ServiceResponse<any>();
 
     try {
@@ -88,41 +89,43 @@ export class AdsService {
     return response;
   }
 
-  async updateAds(load: any): Promise<ServiceResponse<any>> {
-    const response = new ServiceResponse<any>();
+  async updateAds(
+    id: string,
+    load: Partial<MerchantAd>
+  ): Promise<ServiceResponse<any>> {
+    const response = new ServiceResponse();
     try {
       const adsRepo = AppDataSource.getRepository(MerchantAd);
-      const foundAds = await adsRepo.findOne({
-        where: { id: load.id },
-      });
+      const foundAds = await adsRepo.findOne({ where: { id } });
+
+      console.log({foundAds, load})
+
       if (!foundAds) {
-        response.data = null;
-        response.status = 404;
-        response.message = "No Ads found";
+        (response.data = null),
+          (response.status = 404),
+          (response.message = "No Ads found");
         return response;
       }
 
-      Object.keys(load).forEach((key) => {
-        const typedKey = key as keyof any;
-        if (
-          typedKey !== "id" &&
-          load[typedKey] !== undefined &&
-          load[typedKey] !== null &&
-          load[typedKey] !== ""
-        ) {
-          (foundAds as any)[typedKey] = load[typedKey];
+      // Update only non-empty fields except "id"
+      Object.entries(load).forEach(([key, value]) => {
+        if (key !== "id" && value) {
+          (foundAds as any)[key] = value;
         }
       });
+
       await adsRepo.save(foundAds);
-      response.data = foundAds;
-      response.message = "Ad updated successfully";
-      response.status = 200;
+
+      (response.data = foundAds),
+        (response.message = "Ad updated successfully"),
+        (response.status = 200);
+      return response;
     } catch (e: any) {
-      response.data = null;
-      response.message = e.message;
-      response.status = 500;
+      (response.data = null),
+        (response.message = e.message),
+        (response.status = 500);
+      return response;
     }
-    return response;
   }
 
   async getAdById(id: string): Promise<ServiceResponse<any>> {
@@ -145,13 +148,12 @@ export class AdsService {
 
   async getAdByUserId(id: string): Promise<ServiceResponse<any>> {
     const response = new ServiceResponse<any>();
-    console.log(`user ads id`, id)
+    console.log(`user ads id`, id);
     try {
       const adsRepo = AppDataSource.getRepository(MerchantAd);
       const gottenAdd = await adsRepo.find({
         where: { userId: id },
       });
-
 
       response.data = gottenAdd;
       response.message = "Ads found successfully";
@@ -183,12 +185,9 @@ export class AdsService {
     return response;
   }
 
-  async applyToAds(load: any){
+  async applyToAds(load: any) {
     const response = new ServiceResponse<any>();
-    try{
-
-    }catch (e){
-
-    }
+    try {
+    } catch (e) {}
   }
 }

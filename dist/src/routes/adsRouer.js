@@ -202,4 +202,34 @@ adsRouter.get("/api/ads/:id", TokenVerification, controller.getAdById);
  *                  type: string
  */
 adsRouter.delete("/api/ads/:id", TokenVerification, controller.deleteAds);
+/**
+ * @openapi
+ * /api/ads/update-ad/{id}:
+ *   put:
+ *     summary: Update an existing advertisement
+ *     tags:
+ *       - Ads
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the advertisement to update
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             additionalProperties: true
+ *     responses:
+ *       200:
+ *         description: Advertisement updated successfully
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Advertisement not found
+ */
+adsRouter.put("/api/ads/update-ad/:id", TokenVerification, controller.updateAds);
 export default adsRouter;

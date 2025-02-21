@@ -64,8 +64,8 @@ export class AdsController {
 
   deleteAds: RequestHandler = async (req, res): Promise<any> => {
     try {
-      const { adsId } = req.params;
-      const newAd = await this.service.deleteAds(adsId);
+      const { id } = req.params;
+      const newAd = await this.service.deleteAds(id);
       res.json(newAd);
     } catch (error: any) {
       res
@@ -76,7 +76,8 @@ export class AdsController {
   updateAds: RequestHandler = async (req, res): Promise<any> => {
     try {
       const load = req.body
-      const newAd = await this.service.updateAds(load);
+      const { id } = req.params;
+      const newAd = await this.service.updateAds(id,load);
       res.json(newAd);
     } catch (error: any) {
       res
