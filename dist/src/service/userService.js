@@ -220,7 +220,7 @@ The Talented Skills Team`;
             if (!user) {
                 return { status: 404, message: "User not found" };
             }
-            const { KYC_status, accountNumber, account_status, account_tier, address, city, country_of_residence, firstName, is_verified, kyc_verified, profile_image, username, lastName, } = user;
+            const { KYC_status, accountNumber, account_status, account_tier, address, city, country_of_residence, firstName, is_verified, kyc_verified, profile_image, username, lastName, phone } = user;
             const userMap = {
                 KYC_status,
                 lastName,
@@ -235,6 +235,8 @@ The Talented Skills Team`;
                 kyc_verified,
                 profile_image,
                 username,
+                email: email,
+                phone
             };
             return { status: 200, message: userMap };
         }

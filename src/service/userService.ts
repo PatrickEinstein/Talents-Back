@@ -289,6 +289,7 @@ The Talented Skills Team`;
         profile_image,
         username,
         lastName,
+        phone
       } = user;
       const userMap = {
         KYC_status,
@@ -304,6 +305,8 @@ The Talented Skills Team`;
         kyc_verified,
         profile_image,
         username,
+        email: email,
+        phone
       };
       return { status: 200, message: userMap };
     } catch (err: any) {

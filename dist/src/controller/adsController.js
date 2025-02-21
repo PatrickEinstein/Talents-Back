@@ -34,8 +34,9 @@ export class AdsController {
     };
     getAdById = async (req, res) => {
         try {
-            const { adsId } = req.params;
-            const newAd = await this.service.getAdById(adsId);
+            const { id } = req.params;
+            console.log(req.params);
+            const newAd = await this.service.getAdById(id);
             res.json(newAd);
         }
         catch (error) {

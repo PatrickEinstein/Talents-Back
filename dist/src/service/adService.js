@@ -114,7 +114,7 @@ export class AdsService {
         const response = new ServiceResponse();
         try {
             const adsRepo = AppDataSource.getRepository(MerchantAd);
-            const gottenAdd = adsRepo.findOne({
+            const gottenAdd = await adsRepo.findOne({
                 where: { id: id },
             });
             response.data = gottenAdd;
