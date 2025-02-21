@@ -13,10 +13,7 @@ import fs from "fs";
 import path from "path";
 import NotificationJob from "./service/MessagingService/Index.js";
 import walletRouter from "./routes/walletsRouter.js";
-
-
-
-
+import adsRouter from "./routes/adsRouer.js";
 
 //---------------------CONFIGURE SERVER WITH NO CERTIFICATE FOR HTTP AND CERTIFICATE FOR HTTPS
 const sslOptions = {
@@ -34,8 +31,6 @@ app.use(cors());
 app.use(express.json());
 app.use(upload.any());
 
-
-
 //------------------ SET UP ROUTES
 app.get("/api/docs.json", (req, res) => {
   res.setHeader("Content-Type", "application/json");
@@ -45,7 +40,7 @@ app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerconfig));
 
 app.use("/", userRouter);
 app.use("/", walletRouter);
-
+app.use("/", adsRouter);
 
 // -------------- SETUP DATABASE CONNECTION AND MAKE SERVER LISTEN
 const PORT: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;

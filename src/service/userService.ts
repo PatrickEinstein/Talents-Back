@@ -87,7 +87,23 @@ export class UserService implements IUser {
   }
 
   async CreateUser(load: ICreateUser) {
-    console.log(`CreatingUserLoad-backend`, load);
+    let error = [];
+
+    // I want to check if any the fields in the load is empty string
+    const allaluesinLoad = Object.entries(load); // convert each key/values in the load to array
+    for (let i = 0; i < allaluesinLoad.length; i++) { // loop and see if any  value is empty
+      if (!allaluesinLoad[i][1]) {
+        error.push(`${allaluesinLoad[i][0]}`); // push the key into the error array
+      }
+    }
+
+    if (error.length > 0) {
+      return {
+        status: 400,
+        message: `please provide a valid  ${error.join(",")}`, // join the array to string
+      };
+    }
+
     let createduserId = 0;
     const userRepository = AppDataSource.getRepository(User);
     const roleRepository = AppDataSource.getRepository(Roles);
@@ -258,7 +274,38 @@ The Talented Skills Team`;
       if (!user) {
         return { status: 404, message: "User not found" };
       }
-      return { status: 200, message: user };
+
+      const {
+        KYC_status,
+        accountNumber,
+        account_status,
+        account_tier,
+        address,
+        city,
+        country_of_residence,
+        firstName,
+        is_verified,
+        kyc_verified,
+        profile_image,
+        username,
+        lastName,
+      } = user;
+      const userMap = {
+        KYC_status,
+        lastName,
+        accountNumber,
+        account_status,
+        account_tier,
+        address,
+        city,
+        country_of_residence,
+        firstName,
+        is_verified,
+        kyc_verified,
+        profile_image,
+        username,
+      };
+      return { status: 200, message: userMap };
     } catch (err: any) {
       return {
         status: 500,

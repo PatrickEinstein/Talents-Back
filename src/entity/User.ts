@@ -1,7 +1,8 @@
 import { IsNotEmpty } from "class-validator";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Role } from "../types.js";
 import { BaseModel } from "./BaseModel.js";
+import { MerchantAd } from "./Ads.js";
 
 export enum UserType {
   SuperAdmin = "SuperAdmin",
@@ -114,6 +115,8 @@ export class User extends BaseModel {
 
   @Column({ type: "timestamp", nullable: true })
   resetTokenExpiry!: Date | null;
+
+
 }
 
 @Entity("roles")

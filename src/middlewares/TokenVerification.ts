@@ -25,7 +25,6 @@ const TokenVerification = async (
   try {
     const decoded = jwt.verify(token, process.env.SECRET_KEY as string);
     req.user = decoded; // Assign the decoded token to req.user
-    console.log(req.user)
     next();
   } catch (err) {
     return res.status(401).json({ message: "Token expired or invalid" });

@@ -2,6 +2,10 @@ import "reflect-metadata";
 import { DataSource } from "typeorm";
 import path from 'path';
 import dotenv from 'dotenv';
+import { User } from "./entity/User.js";
+import { Otp } from "./entity/Otp.js";
+import { MerchantAd } from "./entity/Ads.js";
+import { Message } from "./entity/Message.js";
 dotenv.config();
 const __dirname = path.dirname(new URL(import.meta.url).pathname).slice(1);
 console.log(`EntitiesPath`, __dirname);
@@ -18,9 +22,8 @@ const AppDataSource = new DataSource({
     //   rejectUnauthorized: false,
     //   ca: fs.readFileSync("./ca.pem").toString(),
     // },
-    entities: [`${__dirname}/entity/*.js`],
+    entities: [User, Otp, MerchantAd, Message],
     migrations: [`${__dirname}/migration/*.js`],
     subscribers: [`${__dirname}/subscriber/*.js`],
 });
-console.log("Entities:", AppDataSource.options.entities);
 export default AppDataSource;

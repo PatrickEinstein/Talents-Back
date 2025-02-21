@@ -12,6 +12,7 @@ import userRouter from "./routes/userRouter.js";
 import fs from "fs";
 import NotificationJob from "./service/MessagingService/Index.js";
 import walletRouter from "./routes/walletsRouter.js";
+import adsRouter from "./routes/adsRouer.js";
 //---------------------CONFIGURE SERVER WITH NO CERTIFICATE FOR HTTP AND CERTIFICATE FOR HTTPS
 const sslOptions = {
     pfx: fs.readFileSync("test_cert.pfx"),
@@ -33,6 +34,7 @@ app.get("/api/docs.json", (req, res) => {
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerconfig));
 app.use("/", userRouter);
 app.use("/", walletRouter);
+app.use("/", adsRouter);
 // -------------- SETUP DATABASE CONNECTION AND MAKE SERVER LISTEN
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
 const HTTPS_PORT = process.env.HTTPS_PORT

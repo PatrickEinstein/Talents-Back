@@ -42,6 +42,19 @@ export interface IVerifyOtp {
   otp: string;
 }
 
+
+
+export interface ICreateAds{
+  jobTitle: string;
+  jobDescription: string;
+  // by: string;
+  workmode: string;
+  remuneration: string;
+  // image: string;
+  date: Date;
+  eligibility: string;
+}
+
 export interface VerifyOtpResponse {
   status: number;
   message: string;

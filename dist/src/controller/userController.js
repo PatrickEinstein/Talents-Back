@@ -20,8 +20,9 @@ export class UserController {
         res.json(response);
     };
     GetUser = async (req, res) => {
-        const useremail = req.user?.email; // Access user ID from request object
-        const response = await this.user.GetUser(useremail);
+        console.log(`currently logged in user`, req.user);
+        const userId = req.user?.email; // Access user ID from request object
+        const response = await this.user.GetUser(userId);
         res.status(response.status).json(response);
     };
     GetAllUsers = async (req, res) => {

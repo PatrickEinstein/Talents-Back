@@ -36,8 +36,9 @@ export class UserController {
   };
 
   GetUser: RequestHandler = async (req: CustomRequest, res) => {
-    const useremail = req.user?.email; // Access user ID from request object
-    const response = await this.user.GetUser(useremail);
+    console.log(`currently logged in user`, req.user)
+    const userId = req.user?.email; // Access user ID from request object
+    const response = await this.user.GetUser(userId);
     res.status(response.status).json(response);
   };
 
