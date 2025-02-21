@@ -7,17 +7,91 @@ export class AdsController {
   service = new AdsService();
   createAd: RequestHandler = async (req: CustomRequest, res): Promise<any> => {
     try {
-
-      // console.log(`createAdsUser`, req.user.id )
-      const userId = req.user?.id ;
+      const userId = req.user?.id;
       const load = req.body as ICreateAds;
-
-      console.log(`Ads Load`, load)
-      
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
       const newAd = await this.service.createAds(userId, load);
+      res.json(newAd);
+    } catch (error: any) {
+      res
+        .status(500)
+        .json({ message: "Error creating ad", error: error.message });
+    }
+  };
+
+  getAdByUserId: RequestHandler = async (
+    req: CustomRequest,
+    res
+  ): Promise<any> => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const newAd = await this.service.getAdByUserId(userId);
+      res.json(newAd);
+    } catch (error: any) {
+      res
+        .status(500)
+        .json({ message: "Error creating ad", error: error.message });
+    }
+  };
+
+  getAdById: RequestHandler = async (req, res): Promise<any> => {
+    try {
+      const { adsId } = req.params;
+      const newAd = await this.service.getAdById(adsId);
+      res.json(newAd);
+    } catch (error: any) {
+      res
+        .status(500)
+        .json({ message: "Error creating ad", error: error.message });
+    }
+  };
+
+  getAllAvailableAds: RequestHandler = async (req, res): Promise<any> => {
+    try {
+      const newAd = await this.service.getAllAvailableAds();
+      res.json(newAd);
+    } catch (error: any) {
+      res
+        .status(500)
+        .json({ message: "Error creating ad", error: error.message });
+    }
+  };
+
+  deleteAds: RequestHandler = async (req, res): Promise<any> => {
+    try {
+      const { adsId } = req.params;
+      const newAd = await this.service.deleteAds(adsId);
+      res.json(newAd);
+    } catch (error: any) {
+      res
+        .status(500)
+        .json({ message: "Error creating ad", error: error.message });
+    }
+  };
+  updateAds: RequestHandler = async (req, res): Promise<any> => {
+    try {
+      const load = req.body
+      const newAd = await this.service.updateAds(load);
+      res.json(newAd);
+    } catch (error: any) {
+      res
+        .status(500)
+        .json({ message: "Error creating ad", error: error.message });
+    }
+  };
+  applyToAds: RequestHandler = async (req:CustomRequest, res): Promise<any> => {
+    try {
+      const userId = req.user?.id;
+      const load = req.body
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const newAd = await this.service.applyToAds(load);
       res.json(newAd);
     } catch (error: any) {
       res

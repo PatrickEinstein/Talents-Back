@@ -1,5 +1,5 @@
 import AppDataSource from "../data-source.js";
-import { MerchantAd } from "../entity/Ads.js";
+import { AdStatus, MerchantAd } from "../entity/Ads.js";
 import { ServiceResponse } from "../entity/serviceResponse.js";
 import { User } from "../entity/User.js";
 
@@ -28,7 +28,7 @@ export class AdsService {
         by: user?.email,
       },
     });
- 
+
     if (usersExistingGigs.length > 7) {
       res.message = "You have reached the maximum number Gigs you can create";
       (res.status = 400), (res.data = null);
@@ -145,14 +145,16 @@ export class AdsService {
 
   async getAdByUserId(id: string): Promise<ServiceResponse<any>> {
     const response = new ServiceResponse<any>();
-
+    console.log(`user ads id`, id)
     try {
       const adsRepo = AppDataSource.getRepository(MerchantAd);
-      const gottenAdd = adsRepo.findOne({
-        where: { id: id },
+      const gottenAdd = await adsRepo.find({
+        where: { userId: id },
       });
+
+
       response.data = gottenAdd;
-      response.message = "Ad created successfully";
+      response.message = "Ads found successfully";
       response.status = 200;
     } catch (e: any) {
       response.message = e.message;
@@ -161,19 +163,32 @@ export class AdsService {
     return response;
   }
 
-  async getAds(load: any) {
+  async getAllAvailableAds() {
     const response = new ServiceResponse<any>();
 
     try {
       const adsRepo = AppDataSource.getRepository(MerchantAd);
-      const createdAds = await adsRepo.save(load);
-      response.data = createdAds;
-      response.message = "Ad created successfully";
+      const allAds = await adsRepo.find({
+        where: {
+          status: AdStatus.Available,
+        },
+      });
+      response.data = allAds;
+      response.message = "Available Ads found successfully";
       response.status = 200;
     } catch (e: any) {
       response.message = e.message;
       response.status = 500;
     }
     return response;
+  }
+
+  async applyToAds(load: any){
+    const response = new ServiceResponse<any>();
+    try{
+
+    }catch (e){
+
+    }
   }
 }

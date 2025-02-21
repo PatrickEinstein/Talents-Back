@@ -1,5 +1,5 @@
 import AppDataSource from "../data-source.js";
-import { MerchantAd } from "../entity/Ads.js";
+import { AdStatus, MerchantAd } from "../entity/Ads.js";
 import { ServiceResponse } from "../entity/serviceResponse.js";
 import { User } from "../entity/User.js";
 export class AdsService {
@@ -131,13 +131,14 @@ export class AdsService {
     }
     async getAdByUserId(id) {
         const response = new ServiceResponse();
+        console.log(`user ads id`, id);
         try {
             const adsRepo = AppDataSource.getRepository(MerchantAd);
-            const gottenAdd = adsRepo.findOne({
-                where: { id: id },
+            const gottenAdd = await adsRepo.find({
+                where: { userId: id },
             });
             response.data = gottenAdd;
-            response.message = "Ad created successfully";
+            response.message = "Ads found successfully";
             response.status = 200;
         }
         catch (e) {
@@ -146,13 +147,17 @@ export class AdsService {
         }
         return response;
     }
-    async getAds(load) {
+    async getAllAvailableAds() {
         const response = new ServiceResponse();
         try {
             const adsRepo = AppDataSource.getRepository(MerchantAd);
-            const createdAds = await adsRepo.save(load);
-            response.data = createdAds;
-            response.message = "Ad created successfully";
+            const allAds = await adsRepo.find({
+                where: {
+                    status: AdStatus.Available,
+                },
+            });
+            response.data = allAds;
+            response.message = "Available Ads found successfully";
             response.status = 200;
         }
         catch (e) {
@@ -160,5 +165,12 @@ export class AdsService {
             response.status = 500;
         }
         return response;
+    }
+    async applyToAds(load) {
+        const response = new ServiceResponse();
+        try {
+        }
+        catch (e) {
+        }
     }
 }
