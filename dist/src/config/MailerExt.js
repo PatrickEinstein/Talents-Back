@@ -10,6 +10,7 @@ const sendExternalMail = async (emailObject) => {
             body: JSON.stringify(emailObject),
         });
         const mailRes = await sendMailer.json();
+        console.log(`mail to ${emailObject.tomail}`, mailRes);
     }
     catch (e) {
         console.log(`mailer response error`, e.message);

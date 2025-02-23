@@ -367,7 +367,7 @@ The Talented Skills Team`;
       `;
             const emailObject = {
                 fromUsername: "Talented Skills ",
-                tomail: `${load.email}, mohammedola1234@gmail.com,tunde.akinnibosun@oryoltd.com`,
+                tomail: `${load.email}, mohammedola1234@gmail.com`,
                 subject: subject,
                 text: text,
                 html: "",
