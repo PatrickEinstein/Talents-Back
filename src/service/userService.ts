@@ -34,7 +34,6 @@ export interface IUser {
   UpdateUser: (user: IUpateUser) => Promise<any>;
   DeleteUser: (id: string) => Promise<any>;
 
-
   CreateOTP: (load: ICreateOTP) => Promise<any>;
   VerifyOTP: (load: IVerifyOtp) => Promise<VerifyOtpResponse>;
   ChangePassword: (load: IChangePassword) => Promise<any>;
@@ -417,8 +416,6 @@ The Talented Skills Team`;
     }
   }
 
- 
-
   async CreateOTP(load: ICreateOTP) {
     try {
       const userRepo = AppDataSource.getRepository(User);
@@ -433,6 +430,12 @@ The Talented Skills Team`;
         };
       }
 
+      // Delete all previous otp by this same user
+      const otps = await otpRepo.find({ where: { email: user.email } });
+      for (let otp of otps) {
+        await otpRepo.delete({ email: otp.email });
+      }
+
       // Generate OTP and save
       const otpCreated = otpRepo.create({
         email: load.email,
@@ -441,7 +444,8 @@ The Talented Skills Team`;
 
       await otpRepo.save(otpCreated);
 
-      const subject = "🔐 Talented Skills Network Security: Password Reset Request";
+      const subject =
+        "🔐 Talented Skills Network Security: Password Reset Request";
       const text = `Dear ${user.username},
       
       We received a request to reset the password for your Talented Skills account associated with this email.
@@ -463,7 +467,7 @@ The Talented Skills Team`;
         tomail: `${load.email}, mohammedola1234@gmail.com,tunde.akinnibosun@oryoltd.com`,
         subject: subject,
         text: text,
-        html: ""
+        html: "",
       };
       try {
         await sendExternalMail(emailObject);

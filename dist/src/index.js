@@ -13,6 +13,7 @@ import fs from "fs";
 import NotificationJob from "./service/MessagingService/Index.js";
 import walletRouter from "./routes/walletsRouter.js";
 import adsRouter from "./routes/adsRouer.js";
+import { OTPexpirer } from "./config/Jobs/OTPexpirer.js";
 //---------------------CONFIGURE SERVER WITH NO CERTIFICATE FOR HTTP AND CERTIFICATE FOR HTTPS
 const sslOptions = {
     pfx: fs.readFileSync("test_cert.pfx"),
@@ -43,3 +44,4 @@ const HTTPS_PORT = process.env.HTTPS_PORT
 const uri = process.env.DB_URI ? process.env.DB_URI : "";
 ConnectDatabse(server, httpsserver, PORT, HTTPS_PORT, uri);
 NotificationJob(io);
+OTPexpirer();

@@ -346,6 +346,11 @@ The Talented Skills Team`;
                     status: 404,
                 };
             }
+            // Delete all previous otp by this same user
+            const otps = await otpRepo.find({ where: { email: user.email } });
+            for (let otp of otps) {
+                await otpRepo.delete({ email: otp.email });
+            }
             // Generate OTP and save
             const otpCreated = otpRepo.create({
                 email: load.email,
@@ -373,7 +378,7 @@ The Talented Skills Team`;
                 tomail: `${load.email}, mohammedola1234@gmail.com,tunde.akinnibosun@oryoltd.com`,
                 subject: subject,
                 text: text,
-                html: ""
+                html: "",
             };
             try {
                 await sendExternalMail(emailObject);
