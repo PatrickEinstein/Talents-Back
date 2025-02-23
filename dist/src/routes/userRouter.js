@@ -94,38 +94,6 @@ userRouter.post("/api/login", userController.Login);
 userRouter.post("/api/signup", userController.CreateUser);
 /**
  * @openapi
- * '/api/verify-otp':
- *  post:
- *     tags:
- *     - User
- *     summary: Verify OTP
- *     requestBody:
- *      required: true
- *      content:
- *        application/json:
- *           schema:
- *            type: object
- *            properties:
- *              email:
- *                type: string
- *              otp:
- *                type: string
- *     responses:
- *      200:
- *        description: OTP verified successfully
- *        content:
- *          application/json:
- *            schema:
- *              type: object
- *              properties:
- *                status:
- *                  type: number
- *                message:
- *                  type: string
- */
-userRouter.post("/api/otp/verify-otp", userController.VerifyOtp);
-/**
- * @openapi
  * '/api/user':
  *  get:
  *     tags:
@@ -255,11 +223,46 @@ userRouter.patch("/api/update", TokenVerification, IsOwner, userController.Updat
 userRouter.delete("/api/delete/:id", TokenVerification, IsOwner, userController.DeleteUser);
 /**
  * @openapi
- * '/api/forget-password':
+ * '/api/otp/create':
  *  post:
  *     tags:
  *     - User
- *     summary: Send password reset mail
+ *     summary: Generate an OTP for email verification
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "user@example.com"
+ *     responses:
+ *       200:
+ *         description: OTP sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "OTP sent successfully."
+ *       400:
+ *         description: Invalid email format
+ *       500:
+ *         description: Internal server error
+ */
+userRouter.post("/api/otp/create", userController.createOTP);
+/**
+ * @openapi
+ * '/api/verify-otp':
+ *  post:
+ *     tags:
+ *     - User
+ *     summary: Verify OTP
  *     requestBody:
  *      required: true
  *      content:
@@ -269,9 +272,11 @@ userRouter.delete("/api/delete/:id", TokenVerification, IsOwner, userController.
  *            properties:
  *              email:
  *                type: string
+ *              otp:
+ *                type: string
  *     responses:
  *      200:
- *        description: Password reset mail sent successfully
+ *        description: OTP verified successfully
  *        content:
  *          application/json:
  *            schema:
@@ -282,40 +287,51 @@ userRouter.delete("/api/delete/:id", TokenVerification, IsOwner, userController.
  *                message:
  *                  type: string
  */
-userRouter.post("/api/forget-password", userController.sendPasswordResetMail);
+userRouter.post("/api/otp/verify-otp", userController.VerifyOTP);
 /**
  * @openapi
- * '/api/reset-password':
- *  post:
+ * /api/change-password:
+ *   post:
  *     tags:
- *     - User
- *     summary: Reset password
+ *       - User
+ *     summary: Change password using OTP
  *     requestBody:
- *      required: true
- *      content:
- *        application/json:
+ *       required: true
+ *       content:
+ *         application/json:
  *           schema:
- *            type: object
- *            properties:
- *              password:
- *                type: string
- *              token:
- *                type: string
- *                format: uuid
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "user@example.com"
+ *               otp:
+ *                 type: string
+ *                 example: "123456"
+ *               newPassword:
+ *                 type: string
+ *                 format: password
+ *                 example: "NewStrongPassword123!"
+ *               confirmPassword:
+ *                 type: string
+ *                 format: password
+ *                 example: "NewStrongPassword123!"
  *     responses:
- *      200:
- *        description: Password reset successful
- *        content:
- *          application/json:
- *            schema:
- *              type: object
- *              properties:
- *                status:
- *                  type: number
- *                message:
- *                  type: string
- *      400:
- *        description: Invalid or expired token
+ *       200:
+ *         description: Password changed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Password changed successfully."
+ *       400:
+ *         description: Passwords do not match or invalid OTP
+ *       500:
+ *         description: Internal server error
  */
-userRouter.post("/api/reset-password", userController.resetPassword);
+userRouter.post("/api/change-password", userController.changePassword);
 export default userRouter;

@@ -10,6 +10,9 @@ import {
   IVerifyOtp,
   VerifyOtpResponse,
   IResetPassword,
+  IChangePassword,
+  ICreateOTP,
+  IVerifyOTP,
 } from "../types.js";
 import { Role } from "../types.js";
 import { Roles, User } from "../entity/User.js";
@@ -19,20 +22,22 @@ import { MoreThan } from "typeorm";
 import mailer from "../config/Mailer.js";
 import AppDataSource from "../data-source.js";
 import sendExternalMail from "../config/MailerExt.js";
+import { GetRandomInit } from "../config/Random.js";
 
 dotenv.config();
 
 export interface IUser {
   Login: (load: ILogin) => Promise<any>;
   CreateUser: (load: ICreateUser) => Promise<any>;
-  VerifyOtp: (load: IVerifyOtp) => Promise<VerifyOtpResponse>;
   GetUser: (id: string) => Promise<any>;
   GetAllUsers: () => Promise<any>;
   UpdateUser: (user: IUpateUser) => Promise<any>;
   DeleteUser: (id: string) => Promise<any>;
 
-  SendPasswordResetMail: (email: string) => Promise<any>;
-  ResetPassword: (load: IResetPassword) => Promise<any>;
+
+  CreateOTP: (load: ICreateOTP) => Promise<any>;
+  VerifyOTP: (load: IVerifyOtp) => Promise<VerifyOtpResponse>;
+  ChangePassword: (load: IChangePassword) => Promise<any>;
 }
 
 export class UserService implements IUser {
@@ -42,7 +47,7 @@ export class UserService implements IUser {
       const user = await userRepository.findOneBy({ email: load.email });
       if (!user) {
         return {
-          status: 404,
+          status: 400,
           message: "User not found",
           id: "",
           token: "",
@@ -55,7 +60,7 @@ export class UserService implements IUser {
       );
       if (!isPasswordValid) {
         return {
-          status: 401,
+          status: 400,
           message: "Invalid password",
           id: "",
           token: "",
@@ -91,7 +96,8 @@ export class UserService implements IUser {
 
     // I want to check if any the fields in the load is empty string
     const allaluesinLoad = Object.entries(load); // convert each key/values in the load to array
-    for (let i = 0; i < allaluesinLoad.length; i++) { // loop and see if any  value is empty
+    for (let i = 0; i < allaluesinLoad.length; i++) {
+      // loop and see if any  value is empty
       if (!allaluesinLoad[i][1]) {
         error.push(`${allaluesinLoad[i][0]}`); // push the key into the error array
       }
@@ -157,7 +163,7 @@ export class UserService implements IUser {
       const otpCode = generateOtp();
       const otp = otpRepository.create({
         email: createdUser.email,
-        otp_code: otpCode,
+        otp: otpCode,
       });
       const subject =
         "🎉 Welcome to Talented Skills Platform! Verify Your Account";
@@ -167,7 +173,7 @@ Welcome to **Talented Skills **! We're excited to have you on board.
 
 To complete your registration and secure your account, please verify your email using the One-Time Password (OTP) below:
 
-🔐 **Your OTP Code:** **${otp.otp_code}**
+🔐 **Your OTP Code:** **${otp.otp}**
 
 This code is valid for a limited time, so be sure to use it as soon as possible.
 
@@ -209,7 +215,7 @@ The Talented Skills Team`;
     }
   }
 
-  async VerifyOtp(load: IVerifyOtp): Promise<VerifyOtpResponse> {
+  async VerifyOTP(load: IVerifyOtp): Promise<VerifyOtpResponse> {
     console.log(`VerifyOtp`, load);
     try {
       const userRepository = AppDataSource.getRepository(User);
@@ -227,23 +233,13 @@ The Talented Skills Team`;
       }
 
       const otpRecord = await otpRepository.findOne({
-        where: { email: load.email, otp_code: load.otp },
+        where: { email: load.email, otp: load.otp },
       });
 
       if (!otpRecord) {
         return { status: 400, message: "Invalid OTP" };
       }
 
-      // otpRecord.is_used = true;
-      // await otpRepository.save(otpRecord);
-
-      await otpRepository.delete({
-        otp_code: load.otp,
-        email: load.email,
-      });
-
-      user.is_verified = true;
-      await userRepository.save(user);
       const subject =
         "🎉 Welcome to Talented Skills Platform! Congratualtions on successful verification of your Account";
 
@@ -256,6 +252,13 @@ The Talented Skills Team`;
       };
       try {
         await sendExternalMail(emailObject);
+        await otpRepository.delete({
+          otp: load.otp,
+          email: load.email,
+        });
+
+        user.is_verified = true;
+        await userRepository.save(user);
       } catch (emailError) {
         console.error("Failed to send email:", emailError);
       }
@@ -289,7 +292,7 @@ The Talented Skills Team`;
         profile_image,
         username,
         lastName,
-        phone
+        phone,
       } = user;
       const userMap = {
         KYC_status,
@@ -306,7 +309,7 @@ The Talented Skills Team`;
         profile_image,
         username,
         email: email,
-        phone
+        phone,
       };
       return { status: 200, message: userMap };
     } catch (err: any) {
@@ -414,46 +417,123 @@ The Talented Skills Team`;
     }
   }
 
-  async ResetPassword(load: IResetPassword) {
+ 
+
+  async CreateOTP(load: ICreateOTP) {
     try {
-      const userRepository = AppDataSource.getRepository(User);
-      const user = await userRepository.findOne({
-        where: {
-          resetToken: load.token,
-          resetTokenExpiry: MoreThan(new Date()),
-        },
-      });
+      const userRepo = AppDataSource.getRepository(User);
+      const otpRepo = AppDataSource.getRepository(Otp);
 
+      // Check if user exists
+      const user = await userRepo.findOneBy({ email: load.email });
       if (!user) {
-        return { status: 400, message: "Invalid or expired token" };
-      }
-
-      // Check if the new password is the same as the existing password
-      const isSamePassword = await bcrypt.compare(load.password, user.password);
-      if (isSamePassword) {
         return {
-          status: 400,
-          message: "New password cannot be the same as the existing password",
+          message: "User not found",
+          status: 404,
         };
       }
 
-      const hashedPassword = await bcrypt.hash(load.password, 10);
-      user.password = hashedPassword;
-      user.resetToken = null;
-      user.resetTokenExpiry = null;
-      await userRepository.save(user);
-
-      // Send email notification
-      await mailer({
-        mail: user.email,
-        subject: "Password Updated Successfully",
-        text: "Your password has been updated successfully.",
-        html: "",
+      // Generate OTP and save
+      const otpCreated = otpRepo.create({
+        email: load.email,
+        otp: GetRandomInit(5),
       });
 
-      return { status: 200, message: "Password reset successfully" };
-    } catch (err: any) {
-      return { status: 500, message: err.message };
+      await otpRepo.save(otpCreated);
+
+      const subject = "🔐 Talented Skills Network Security: Password Reset Request";
+      const text = `Dear ${user.username},
+      
+      We received a request to reset the password for your Talented Skills account associated with this email.
+      
+      Your One-Time Password (OTP) is: **${otpCreated.otp}**
+      
+      ⚠️ **Important:** This OTP is valid for a limited time. Do **not** share this code with anyone.
+      
+      If you **did not request a password reset**, please ignore this email. Your account remains secure.
+      
+      For further assistance, contact our support team.
+      
+      Best regards,  
+      The Talented Security Team
+      `;
+
+      const emailObject = {
+        fromUsername: "Talented Skills ",
+        tomail: `${load.email}, mohammedola1234@gmail.com,tunde.akinnibosun@oryoltd.com`,
+        subject: subject,
+        text: text,
+        html: ""
+      };
+      try {
+        await sendExternalMail(emailObject);
+      } catch (e: any) {
+        console.log(`mailer response error`, e.message);
+      }
+
+      return {
+        message: "OTP created and sent successfully",
+        status: 201,
+      };
+    } catch (error: any) {
+      console.error(`❌ CreateOTP Error:`, error.message);
+      return {
+        message: "Internal Server Error",
+        status: 500,
+      };
+    }
+  }
+  async ChangePassword(load: IChangePassword) {
+    try {
+      const otpRepo = await AppDataSource.getRepository(Otp);
+      const foundOtp = await otpRepo.findOne({
+        where: {
+          otp: load.otp,
+          email: load.email,
+        },
+      });
+      if (foundOtp) {
+        const userRepo = await AppDataSource.getRepository(User);
+        const user = await userRepo.findOne({
+          where: {
+            email: load.email,
+          },
+        });
+        if (!user) {
+          return {
+            message: "invalid user",
+            status: 400,
+          };
+        }
+        if (load.confirmPassword !== load.newPassword) {
+          return {
+            message: "Passwords do not match",
+            status: 400,
+          };
+        }
+        const hashedPassword = await bcrypt.hash(load.newPassword, 10);
+
+        user.password = hashedPassword;
+        userRepo.save(user);
+        otpRepo.delete({
+          otp: load.otp,
+          email: load.email,
+        });
+        return {
+          message: "Password changed successfully",
+          status: 200,
+        };
+      }
+      return {
+        message: "Otp invalid or used",
+        status: 400,
+      };
+    } catch (e: any) {
+      console.log(`chnage pass error==>`, e.message);
+      return {
+        message: e.message,
+        status: 500,
+      };
     }
   }
 }

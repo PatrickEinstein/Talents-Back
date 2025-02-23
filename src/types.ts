@@ -19,6 +19,21 @@ export interface ICreateUser {
   password: string;
 }
 
+export interface ICreateOTP {
+  email: string;
+}
+
+export interface IVerifyOTP{
+  email: string;
+  otp: string;
+}
+
+export interface IChangePassword{
+  email: string;
+  otp: string;
+  newPassword: string;
+  confirmPassword: string;
+}
 export interface IUpateUser {
   id: string;
   username: string;

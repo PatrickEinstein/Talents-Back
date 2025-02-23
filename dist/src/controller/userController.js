@@ -14,11 +14,6 @@ export class UserController {
         const response = await this.user.CreateUser(body);
         res.json(response);
     };
-    VerifyOtp = async (req, res) => {
-        const body = req.body;
-        const response = await this.user.VerifyOtp(body);
-        res.json(response);
-    };
     GetUser = async (req, res) => {
         console.log(`currently logged in user`, req.user);
         const userId = req.user?.email; // Access user ID from request object
@@ -39,14 +34,19 @@ export class UserController {
         const response = await this.user.DeleteUser(id);
         res.json(response);
     };
-    sendPasswordResetMail = async (req, res) => {
-        const { email } = req.body;
-        const response = await this.user.SendPasswordResetMail(email);
+    createOTP = async (req, res) => {
+        const load = req.body;
+        const response = await this.user.CreateOTP(load);
         res.json(response);
     };
-    resetPassword = async (req, res) => {
+    VerifyOTP = async (req, res) => {
         const body = req.body;
-        const response = await this.user.ResetPassword(body);
+        const response = await this.user.VerifyOTP(body);
+        res.json(response);
+    };
+    changePassword = async (req, res) => {
+        const load = req.body;
+        const response = await this.user.ChangePassword(load);
         res.json(response);
     };
 }

@@ -7,6 +7,8 @@ import {
   IUpateUser,
   IVerifyOtp,
   IResetPassword,
+  IChangePassword,
+  ICreateOTP,
 } from "../types.js";
 import { CustomRequest } from "../middlewares/TokenVerification.js";
 
@@ -29,11 +31,6 @@ export class UserController {
     res.json(response);
   };
 
-  VerifyOtp: RequestHandler = async (req, res) => {
-    const body = req.body as IVerifyOtp;
-    const response = await this.user.VerifyOtp(body);
-    res.json(response);
-  };
 
   GetUser: RequestHandler = async (req: CustomRequest, res) => {
     console.log(`currently logged in user`, req.user)
@@ -59,15 +56,22 @@ export class UserController {
     res.json(response);
   };
 
-  sendPasswordResetMail: RequestHandler = async (req, res) => {
-    const { email } = req.body;
-    const response = await this.user.SendPasswordResetMail(email);
+
+  createOTP: RequestHandler = async (req, res) => {
+    const load = req.body as ICreateOTP;
+    const response = await this.user.CreateOTP(load);
     res.json(response);
   };
 
-  resetPassword: RequestHandler = async (req, res) => {
-    const body = req.body as IResetPassword;
-    const response = await this.user.ResetPassword(body);
+  VerifyOTP: RequestHandler = async (req, res) => {
+    const body = req.body as IVerifyOtp;
+    const response = await this.user.VerifyOTP(body);
+    res.json(response);
+  };
+
+  changePassword: RequestHandler = async (req, res) => {
+    const load = req.body as IChangePassword;
+    const response = await this.user.ChangePassword(load);
     res.json(response);
   };
 }

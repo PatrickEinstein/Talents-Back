@@ -7,28 +7,29 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Entity, Column } from "typeorm";
-import { BaseModel } from "./BaseModel.js";
-let Otp = class Otp extends BaseModel {
-    // @ManyToOne(() => User, (user) => user.email, { onDelete: "CASCADE" }) // Foreign key relationship
-    // @JoinColumn({ name: "user_email", referencedColumnName: "email" }) // Maps this column to the `email` in User
-    // user!: User;
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from "typeorm";
+let Otp = class Otp {
+    id;
+    otp;
     email;
-    otp_code;
-    is_used;
+    createdAt;
 };
+__decorate([
+    PrimaryGeneratedColumn(),
+    __metadata("design:type", String)
+], Otp.prototype, "id", void 0);
+__decorate([
+    Column({ nullable: false }),
+    __metadata("design:type", String)
+], Otp.prototype, "otp", void 0);
 __decorate([
     Column({ nullable: false }),
     __metadata("design:type", String)
 ], Otp.prototype, "email", void 0);
 __decorate([
-    Column({ nullable: false }),
-    __metadata("design:type", String)
-], Otp.prototype, "otp_code", void 0);
-__decorate([
-    Column({ default: false }),
-    __metadata("design:type", Boolean)
-], Otp.prototype, "is_used", void 0);
+    CreateDateColumn({ type: "timestamp" }),
+    __metadata("design:type", Date)
+], Otp.prototype, "createdAt", void 0);
 Otp = __decorate([
     Entity()
 ], Otp);
