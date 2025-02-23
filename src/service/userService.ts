@@ -111,7 +111,6 @@ export class UserService implements IUser {
 
     let createduserId = 0;
     const userRepository = AppDataSource.getRepository(User);
-    const roleRepository = AppDataSource.getRepository(Roles);
     const otpRepository = AppDataSource.getRepository(Otp);
 
     try {
@@ -148,12 +147,6 @@ export class UserService implements IUser {
 
       const createdUser = await userRepository.save(user);
       createduserId = +createdUser.id;
-      const role = roleRepository.create({
-        userid: user.id.toString(),
-        isActive: true,
-      });
-      console.log(role);
-      await roleRepository.save(role);
 
       //First delete all existing otp for this user
       otpRepository.delete({ email: user.email });
@@ -206,7 +199,7 @@ The Talented Skills Team`;
     } catch (err: any) {
       console.log(`Error creating user==>`, err);
       await this.DeleteUser(createduserId!.toString());
-      await roleRepository.delete({ userid: createduserId!.toString() });
+
       return {
         status: 500,
         message: err.message,
