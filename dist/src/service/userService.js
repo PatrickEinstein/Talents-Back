@@ -156,52 +156,6 @@ The Talented Skills Team`;
             };
         }
     }
-    async VerifyOTP(load) {
-        console.log(`VerifyOtp`, load);
-        try {
-            const userRepository = AppDataSource.getRepository(User);
-            const otpRepository = AppDataSource.getRepository(Otp);
-            const user = await userRepository.findOneBy({
-                personalToken: load.token2,
-            });
-            if (!user) {
-                return { status: 404, message: "User not found" };
-            }
-            if (user.is_verified) {
-                return { status: 400, message: "User is already verified" };
-            }
-            const otpRecord = await otpRepository.findOne({
-                where: { email: load.email, otp: load.otp },
-            });
-            if (!otpRecord) {
-                return { status: 400, message: "Invalid OTP" };
-            }
-            const subject = "🎉 Welcome to Talented Skills Platform! Congratualtions on successful verification of your Account";
-            const emailObject = {
-                fromUsername: "Talented Skills Network",
-                tomail: `${load.email}, mohammedola1234@gmail.com`,
-                subject: subject,
-                text: "Your account has been successfully verified.",
-                html: "",
-            };
-            try {
-                await sendExternalMail(emailObject);
-                await otpRepository.delete({
-                    otp: load.otp,
-                    email: load.email,
-                });
-                user.is_verified = true;
-                await userRepository.save(user);
-            }
-            catch (emailError) {
-                console.error("Failed to send email:", emailError);
-            }
-            return { status: 200, message: "OTP verified successfully" };
-        }
-        catch (err) {
-            return { status: 500, message: err.message };
-        }
-    }
     async GetUser(email) {
         try {
             const userRepository = AppDataSource.getRepository(User);
@@ -326,22 +280,28 @@ The Talented Skills Team`;
             return { status: 500, message: err.message };
         }
     }
-    async CreateOTP(load) {
+    CreateOTP = async (load) => {
+        const userRepo = AppDataSource.getRepository(User);
+        const otpRepo = AppDataSource.getRepository(Otp);
         try {
-            const userRepo = AppDataSource.getRepository(User);
-            const otpRepo = AppDataSource.getRepository(Otp);
             // Check if user exists
             const user = await userRepo.findOneBy({ email: load.email });
             if (!user) {
                 return {
                     message: "User not found",
                     status: 404,
+                    user: {
+                        username: null,
+                    },
+                    otpCreated: null,
                 };
             }
             // Delete all previous otp by this same user
             const otps = await otpRepo.find({ where: { email: user.email } });
-            for (let otp of otps) {
-                await otpRepo.delete({ email: otp.email });
+            if (otps.length > 0) {
+                for (let otp of otps) {
+                    await otpRepo.delete({ email: otp.email });
+                }
             }
             // Generate OTP and save
             const otpCreated = otpRepo.create({
@@ -349,39 +309,125 @@ The Talented Skills Team`;
                 otp: GetRandomInit(5),
             });
             await otpRepo.save(otpCreated);
-            const subject = "🔐 Talented Skills Network Security: Password Reset Request";
-            const text = `Dear ${user.username},
-      
-      We received a request to reset the password for your Talented Skills account associated with this email.
-      
-      Your One-Time Password (OTP) is: **${otpCreated.otp}**
-      
-      ⚠️ **Important:** This OTP is valid for a limited time. Do **not** share this code with anyone.
-      
-      If you **did not request a password reset**, please ignore this email. Your account remains secure.
-      
-      For further assistance, contact our support team.
-      
-      Best regards,  
-      The Talented Security Team
-      `;
-            const emailObject = {
-                fromUsername: "Talented Skills ",
-                tomail: `${load.email}, mohammedola1234@gmail.com`,
-                subject: subject,
-                text: text,
-                html: "",
-            };
-            try {
-                await sendExternalMail(emailObject);
-            }
-            catch (e) {
-                console.log(`mailer response error`, e.message);
-            }
             return {
-                message: "OTP created and sent successfully",
-                status: 201,
+                user: {
+                    username: user.username,
+                },
+                status: 200,
+                otpCreated,
+                message: "",
             };
+        }
+        catch (err) {
+            return {
+                user: {
+                    username: "",
+                },
+                status: 500,
+                otpCreated: null,
+                message: "",
+            };
+        }
+    };
+    async VerifyOTP(load) {
+        try {
+            const userRepository = AppDataSource.getRepository(User);
+            const otpRepository = AppDataSource.getRepository(Otp);
+            const user = await userRepository.findOneBy({
+                personalToken: load.token2,
+            });
+            if (!user) {
+                return { status: 404, message: "User not found" };
+            }
+            const otpRecord = await otpRepository.findOne({
+                where: { email: load.email, otp: load.otp },
+            });
+            if (!otpRecord) {
+                return { status: 400, message: "Invalid OTP" };
+            }
+            await otpRepository.delete({
+                otp: load.otp,
+                email: load.email,
+            });
+            return { status: 200, message: "OTP verified successfully" };
+        }
+        catch (err) {
+            return { status: 500, message: err.message };
+        }
+    }
+    async VerifyUser(load) {
+        const userRepository = AppDataSource.getRepository(User);
+        try {
+            const { status, message } = await this.VerifyOTP(load);
+            if (status === 200) {
+                const subject = "🎉 Welcome to Talented Skills Platform! Congratualtions on successful verification of your Account";
+                const emailObject = {
+                    fromUsername: "Talented Skills Network",
+                    tomail: `${load.email}, mohammedola1234@gmail.com`,
+                    subject: subject,
+                    text: "Your account has been successfully verified.",
+                    html: "",
+                };
+                try {
+                    const user = await userRepository.findOneBy({
+                        personalToken: load.token2,
+                    });
+                    if (user) {
+                        await sendExternalMail(emailObject);
+                        user.is_verified = true;
+                        await userRepository.save(user);
+                    }
+                }
+                catch (emailError) {
+                    console.error("Failed to send email:", emailError);
+                }
+                return { status: 200, message: "OTP verified successfully" };
+            }
+            return { status: 400, message: "Verification failed" };
+        }
+        catch (err) {
+            return { status: 500, message: err.message };
+        }
+    }
+    async RequestPasswordChange(load) {
+        try {
+            const { status, user, otpCreated } = await this.CreateOTP(load);
+            if (status === 200) {
+                const subject = "🔐 Talented Skills Network Security: Password Reset Request";
+                const text = `Dear ${user?.username},
+        
+        We received a request to reset the password for your Talented Skills account associated with this email.
+        
+        Your One-Time Password (OTP) is: **${otpCreated?.otp}**
+        
+        ⚠️ **Important:** This OTP is valid for a limited time. Do **not** share this code with anyone.
+        
+        If you **did not request a password reset**, please ignore this email. Your account remains secure.
+        
+        For further assistance, contact our support team.
+        
+        Best regards,  
+        The Talented Security Team
+        `;
+                const emailObject = {
+                    fromUsername: "Talented Skills ",
+                    tomail: `${load.email}, mohammedola1234@gmail.com`,
+                    subject: subject,
+                    text: text,
+                    html: "",
+                };
+                try {
+                    await sendExternalMail(emailObject);
+                }
+                catch (e) {
+                    console.log(`mailer response error`, e.message);
+                }
+                return {
+                    message: "OTP created and sent successfully",
+                    status: 201,
+                };
+            }
+            return { status: 400, message: "Verification failed" };
         }
         catch (error) {
             console.error(`❌ CreateOTP Error:`, error.message);

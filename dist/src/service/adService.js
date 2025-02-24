@@ -1,3 +1,4 @@
+import sendExternalMail from "../config/MailerExt.js";
 import AppDataSource from "../data-source.js";
 import { AdStatus, MerchantAd } from "../entity/Ads.js";
 import { ServiceResponse } from "../entity/serviceResponse.js";
@@ -64,7 +65,7 @@ export class AdsService {
         }
     };
     async deleteAds(id) {
-        console.log(`delete ads id`, id);
+        // console.log(`delete ads id`, id);
         const response = new ServiceResponse();
         try {
             const adsRepo = AppDataSource.getRepository(MerchantAd);
@@ -84,7 +85,7 @@ export class AdsService {
         try {
             const adsRepo = AppDataSource.getRepository(MerchantAd);
             const foundAds = await adsRepo.findOne({ where: { id } });
-            console.log({ foundAds, load });
+            // console.log({ foundAds, load });
             if (!foundAds) {
                 (response.data = null),
                     (response.status = 404),
@@ -129,7 +130,7 @@ export class AdsService {
     }
     async getAdByUserId(id) {
         const response = new ServiceResponse();
-        console.log(`user ads id`, id);
+        // console.log(`user ads id`, id);
         try {
             const adsRepo = AppDataSource.getRepository(MerchantAd);
             const gottenAdd = await adsRepo.find({
@@ -166,8 +167,119 @@ export class AdsService {
     }
     async applyToAds(load) {
         const response = new ServiceResponse();
+        const userRepo = AppDataSource.getRepository(User);
+        const gigRepo = AppDataSource.getRepository(MerchantAd);
         try {
+            const user = await userRepo.findOne({
+                where: {
+                    email: load.email,
+                },
+            });
+            if (!user) {
+                response.message = "User not found";
+                response.status = 400;
+                return response;
+            }
+            if (!user.is_verified) {
+                response.message =
+                    "Kindly verify your account before you can apply to jobs";
+                response.status = 400;
+                return response;
+            }
+            const gig = await gigRepo.findOne({
+                where: {
+                    id: load.gigId,
+                },
+            });
+            if (!gig) {
+                response.message = "Invalid Gig cannot be found";
+                response.status = 400;
+                return response;
+            }
+            if (gig.applied_talent?.includes(load.email)) {
+                response.message =
+                    "you have already applied to this Gig, Please wait for the Hirer to make a decision";
+                response.status = 400;
+                return response;
+            }
+            gig.applied_talent?.push(load.email);
+            console.log(gig.applied_talent, `for talent ${gig.title}`);
+            await gigRepo.save(gig);
+            response.status = 200;
+            response.message = "you have successfully applied to this gig";
+            return response;
         }
-        catch (e) { }
+        catch (e) {
+            response.message = e.message;
+            response.status = 500;
+            return response;
+        }
+    }
+    async HireTalentToAds(load) {
+        const response = new ServiceResponse();
+        const userRepo = AppDataSource.getRepository(User);
+        const gigRepo = AppDataSource.getRepository(MerchantAd);
+        try {
+            const user = await userRepo.findOne({
+                where: { email: load.email },
+            });
+            if (!user) {
+                response.message = "The talent you are hiring does not exist";
+                response.status = 400;
+                return response;
+            }
+            const gig = await gigRepo.findOne({
+                where: { id: load.gigId },
+            });
+            if (!gig) {
+                response.message = "Invalid Gig cannot be found";
+                response.status = 400;
+                return response;
+            }
+            if (gig.userId !== load.userId) {
+                response.message =
+                    "Forbidden, you cannot hire for a gig not created by you";
+                response.status = 403;
+                return response;
+            }
+            // Hire the talent
+            gig.hired_talent = load.email;
+            gig.applied_talent = gig.applied_talent?.filter((talent) => talent !== load.email);
+            // Save the updated gig
+            await gigRepo.save(gig);
+            // Send a congratulatory email to the hired talent
+            const subject = "🎉 Congratulations! You've been hired";
+            const text = `Dear ${user.username},\n\nYou have been hired for the gig: "${gig.title}".\n\nBest regards,\nThe Talented Skills Team`;
+            const emailObject = {
+                fromUsername: "Talented Skills",
+                tomail: `${load.email}, mohammedola1234@gmail.com`,
+                subject,
+                text,
+                html: "",
+            };
+            try {
+                await sendExternalMail(emailObject);
+                for (const email of gig.applied_talent ?? []) {
+                    const consolationSubject = "🙏 Thank you for applying";
+                    const consolationText = `Dear ${email},\n\nWe appreciate your application for the gig: "${gig.title}". 
+          Unfortunately, another candidate was selected, but we encourage you to apply for future opportunities.
+          \n\nBest regards,\nThe Talented Skills Team`;
+                    const emailObject2 = {
+                        fromUsername: "Talented Skills",
+                        tomail: `${email}, mohammedola1234@gmail.com`,
+                        subject: consolationSubject,
+                        text: consolationText,
+                        html: "",
+                    };
+                    await sendExternalMail(emailObject2);
+                }
+            }
+            catch (e) {
+                console.log(`Mailer response error:`, e.message);
+            }
+        }
+        catch (err) {
+            console.error(`Error hiring talent:`, err.message);
+        }
     }
 }

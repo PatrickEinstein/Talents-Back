@@ -232,4 +232,82 @@ adsRouter.delete("/api/ads/:id", TokenVerification, controller.deleteAds);
  *         description: Advertisement not found
  */
 adsRouter.put("/api/ads/update-ad/:id", TokenVerification, controller.updateAds);
+/**
+ * @openapi
+ * '/api/ads/apply/{gigId}':
+ *  post:
+ *     tags:
+ *     - Ads
+ *     summary: Apply for a Gig Advertisement
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: gigId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Unique identifier of the gig being applied for.
+ *     responses:
+ *      200:
+ *        description: Successfully applied to the gig
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                status:
+ *                  type: number
+ *                message:
+ *                  type: string
+ *                data:
+ *                  type: object
+ *      401:
+ *        description: Unauthorized - User must be logged in
+ *      500:
+ *        description: Internal server error
+ */
+adsRouter.post("/api/ads/apply/:gigId", TokenVerification, controller.applyToAds);
+/**
+ * @openapi
+ * '/api/ads/hire':
+ *  post:
+ *     tags:
+ *     - Ads
+ *     summary: Hire a Talent for a Gig
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               gigId:
+ *                 type: string
+ *               talentEmail:
+ *                 type: string
+ *     responses:
+ *      200:
+ *        description: Successfully hired a talent
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                status:
+ *                  type: number
+ *                message:
+ *                  type: string
+ *                data:
+ *                  type: object
+ *      401:
+ *        description: Unauthorized - User must be logged in
+ *      400:
+ *        description: Bad request - Invalid gig or user data
+ *      500:
+ *        description: Internal server error
+ */
+adsRouter.post("/api/ads/hire", TokenVerification, controller.HireTalentToAds);
 export default adsRouter;

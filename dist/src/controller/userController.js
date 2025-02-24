@@ -34,14 +34,14 @@ export class UserController {
         const response = await this.user.DeleteUser(id);
         res.json(response);
     };
-    createOTP = async (req, res) => {
+    RequestPasswordChange = async (req, res) => {
         const load = req.body;
-        const response = await this.user.CreateOTP(load);
+        const response = await this.user.RequestPasswordChange(load);
         res.json(response);
     };
-    VerifyOTP = async (req, res) => {
+    VerifyUser = async (req, res) => {
         const body = req.body;
-        const response = await this.user.VerifyOTP(body);
+        const response = await this.user.VerifyUser(body);
         res.json(response);
     };
     changePassword = async (req, res) => {

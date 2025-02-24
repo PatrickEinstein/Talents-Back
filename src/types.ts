@@ -1,6 +1,4 @@
-import { UserType } from "./entity/User";
-
-
+import { User, UserType } from "./entity/User";
 
 export interface ILogin {
   email: string;
@@ -23,12 +21,12 @@ export interface ICreateOTP {
   email: string;
 }
 
-export interface IVerifyOTP{
+export interface IVerifyOTP {
   email: string;
   otp: string;
 }
 
-export interface IChangePassword{
+export interface IChangePassword {
   email: string;
   otp: string;
   newPassword: string;
@@ -37,7 +35,7 @@ export interface IChangePassword{
 export interface IUpateUser {
   id: string;
   username: string;
-  address:string;
+  address: string;
 }
 
 export enum Role {
@@ -57,15 +55,23 @@ export interface IVerifyOtp {
   otp: string;
 }
 
+export interface IApplyToAds {
+  email: string;
+  gigId: string;
+}
 
+export interface IHireToAds {
+  email: string;
+  gigId: string;
+  userId: string;
+}
 
-export interface ICreateAds{
+export interface ICreateAds {
   jobTitle: string;
   jobDescription: string;
-  // by: string;
   workmode: string;
   remuneration: string;
-  // image: string;
+  image: string;
   date: Date;
   eligibility: string;
 }
@@ -79,4 +85,3 @@ export interface IResetPassword {
   password: string;
   token: string;
 }
-

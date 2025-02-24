@@ -119,7 +119,7 @@ __decorate([
     __metadata("design:type", String)
 ], MerchantAd.prototype, "eligibility", void 0);
 __decorate([
-    Column({ type: "simple-array", nullable: true }),
+    Column({ type: "simple-array", nullable: false, default: "" }),
     __metadata("design:type", Array)
 ], MerchantAd.prototype, "applied_talent", void 0);
 __decorate([

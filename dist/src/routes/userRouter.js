@@ -255,7 +255,7 @@ userRouter.delete("/api/delete/:id", TokenVerification, IsOwner, userController.
  *       500:
  *         description: Internal server error
  */
-userRouter.post("/api/otp/create", userController.createOTP);
+userRouter.post("/api/otp/create", userController.RequestPasswordChange);
 /**
  * @openapi
  * '/api/verify-otp':
@@ -287,7 +287,7 @@ userRouter.post("/api/otp/create", userController.createOTP);
  *                message:
  *                  type: string
  */
-userRouter.post("/api/otp/verify-otp", userController.VerifyOTP);
+userRouter.post("/api/otp/verify-otp", userController.VerifyUser);
 /**
  * @openapi
  * /api/change-password:

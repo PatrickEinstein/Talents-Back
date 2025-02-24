@@ -57,15 +57,15 @@ export class UserController {
   };
 
 
-  createOTP: RequestHandler = async (req, res) => {
+  RequestPasswordChange: RequestHandler = async (req, res) => {
     const load = req.body as ICreateOTP;
-    const response = await this.user.CreateOTP(load);
+    const response = await this.user.RequestPasswordChange(load);
     res.json(response);
   };
 
-  VerifyOTP: RequestHandler = async (req, res) => {
+  VerifyUser: RequestHandler = async (req, res) => {
     const body = req.body as IVerifyOtp;
-    const response = await this.user.VerifyOTP(body);
+    const response = await this.user.VerifyUser(body);
     res.json(response);
   };
 

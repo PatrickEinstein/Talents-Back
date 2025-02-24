@@ -42,7 +42,7 @@ export class AdsController {
   getAdById: RequestHandler = async (req, res): Promise<any> => {
     try {
       const { id } = req.params;
-      console.log(req.params)
+      console.log(req.params);
       const newAd = await this.service.getAdById(id);
       res.json(newAd);
     } catch (error: any) {
@@ -76,9 +76,9 @@ export class AdsController {
   };
   updateAds: RequestHandler = async (req, res): Promise<any> => {
     try {
-      const load = req.body
+      const load = req.body;
       const { id } = req.params;
-      const newAd = await this.service.updateAds(id,load);
+      const newAd = await this.service.updateAds(id, load);
       res.json(newAd);
     } catch (error: any) {
       res
@@ -86,14 +86,43 @@ export class AdsController {
         .json({ message: "Error creating ad", error: error.message });
     }
   };
-  applyToAds: RequestHandler = async (req:CustomRequest, res): Promise<any> => {
+  applyToAds: RequestHandler = async (
+    req: CustomRequest,
+    res
+  ): Promise<any> => {
+    try {
+      const useremail = req.user?.email;
+      const { gigId } = req.params;
+      if (!useremail) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const newAd = await this.service.applyToAds({
+        email: useremail,
+        gigId: gigId,
+      });
+      res.json(newAd);
+    } catch (error: any) {
+      res
+        .status(500)
+        .json({ message: "Error creating ad", error: error.message });
+    }
+  };
+
+  HireTalentToAds: RequestHandler = async (
+    req: CustomRequest,
+    res
+  ): Promise<any> => {
     try {
       const userId = req.user?.id;
-      const load = req.body
+      const { gigId, talentEmail } = req.body;
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      const newAd = await this.service.applyToAds(load);
+      const newAd = await this.service.HireTalentToAds({
+        email: talentEmail,
+        gigId: gigId,
+        userId,
+      });
       res.json(newAd);
     } catch (error: any) {
       res

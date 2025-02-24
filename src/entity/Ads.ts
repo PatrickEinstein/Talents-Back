@@ -75,7 +75,7 @@ export class MerchantAd extends BaseModel {
   image!: string;
   @Column({ nullable: false })
   eligibility!: string;
-  @Column({ type: "simple-array", nullable: true })
+  @Column({ type: "simple-array", nullable: false, default: "" })
   applied_talent?: string[];
   @Column({ nullable: true })
   hired_talent?: string;
